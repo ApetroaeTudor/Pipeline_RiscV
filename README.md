@@ -48,10 +48,10 @@ IO_HI 32'h001f_ffff <br>
 ### Implementation Details
 ![Implementation diagram](./Pipeline/Others/Pipeline.png)
 The 5 stage pipeline structure is defined by the 4 stage-dividing registers, which store relevant data between clock cycles. In the diagram presented here, the data path is represented with black, and the various control signals that define the execution of certain instructions is represented with blue.<br>
-A benefit of the pipelined architecture is that multiple instructions are executed simultaneously. At the same time, hazards can occur, causing incorrect program execution. The Hazard Unit, based on information that is already present in the pipeline, can detect these occurances.
-**Some relevant hazards are:**
+A benefit of the pipelined architecture is that multiple instructions are executed simultaneously. At the same time, hazards can occur, causing incorrect program execution. The Hazard Unit, based on information that is already present in the pipeline, can detect these occurances. <br> <br>
+**Some relevant hazards are:** <br>
 -> Data Hazards (Read after Write, register use immediately after lw):<br>
-Forward if:<br>
+**Forward if:**<br>
     1. A source register in execute-stage is the same as the destination register in memory-stage/decode-stage. (non csr)<br>
     2. A source register in decode-stage is the same as the destination register in write-back-stage (non csr)<br>
     3. The instruction in memory-stage/write-back-stage is csr-type and a source register in execute-stage is the same as the destination register in mem/wb (csr followed by normal)<br>
@@ -59,18 +59,18 @@ Forward if:<br>
     5. The instruction in ex/mem/wb is csr and the instruction in decode is csr, and the imm field in decode is the same as the imm field in ex/mem/wb (csr followed by csr)<br>
     6. The instruction in em/mem/wb is csr and the instruction in decode is csr, and the source register in decode is the same as the destination in ex/mem/wb (csr followed by csr)<br>
    Extra forwards are needed for csr type instructions because they don't fully share the same path with regular rv32i instructions (Different register file and 2 register writes).<br>
-Stall if:<br>
+**Stall if:**<br>
     1. The instruction in execute takes data from memory, and the destination register in execute is the same as the source register in decode. This stalls the IF_ID register and the PC, inserting a bubble for one clock cycle.<br>
     2. An exception is detected in the fetch stage: IF_ID stall, because the opcode of the faulting instruction has to be in decode in order to decide new permissions.<br>
-Flush if:<br>
+**Flush if:**<br>
     1. A load bubble was introduced (Flush ID_EX to prevent invalid data from propagating).<br>
     2. Mret instruction is in execute stage (Flush IF_ID and ID_EX to prevent the instructions in fetch and decode from executing).<br>
     3. A branch is taken or a j type instruction is in execute (Flush IF_ID and ID_EX)<br>
     4. An exception is detected in fetch and is now in decode (Flush IF_ID to clear the instruction that entered in fetch).<br>
-    5. An exception is detected in execute and is now in mem-stage (Flush ID_EX and IF_ID).<br>
+    5. An exception is detected in execute and is now in mem-stage (Flush ID_EX and IF_ID).<br> <br>
 -> Control Hazards (Not knowing whether a conditional branch is taken or not)<br>
 
-**Detected Exceptions:**
+**Detected Exceptions:** <br>
 -> Fetch address misaligned (code 0) <br>
 -> Illegal instruction (code 2) <br>
 -> Sp out of range (code 3) <br>
@@ -80,9 +80,9 @@ Flush if:<br>
 -> Ecall (code 7) <br>
     Ecall uses the data in register a7 in order to execute a syscall. (WIP) <br>
 
-**Exception Handling:**
-Upon detecting an exception the PC is updated to the beginning of the Trap Vector (addr 0x00000000 in rom instruction mem). Used registers are stored on the csr stack, and depending on the exception code found in the mcause register the code branches to the correct handler. After handling the exception the program either exits (goes into an infinite loop with no instructions) or returns to the value found in mepc (using mret).<br>
--> Special csr registers: <br>
+**Exception Handling:** <br>
+Upon detecting an exception the PC is updated to the beginning of the Trap Vector (addr 0x00000000 in rom instruction mem). Used registers are stored on the csr stack, and depending on the exception code found in the mcause register the code branches to the correct handler. After handling the exception the program either exits (goes into an infinite loop with no instructions) or returns to the value found in mepc (using mret).<br> <br>
+-> Special csr registers:
 1. mstatus lower <br>
 2. mie <br>
 3. mtvec <br>
@@ -91,11 +91,13 @@ Upon detecting an exception the PC is updated to the beginning of the Trap Vecto
 6. mepc <br>
 7. mcause <br>
 8. mtval <br>
+   
 -> Entering the trap vector: <br>
 1. mepc <= current PC <br>
 2. mie <= 0 (interrupts disabled in trap vector **Interrupts are WIP**) <br>
 3. mcause <= exception code (bit 31 = 1 for interrupt, 0 for exception) <br>
-4. mtval <= additional exception info
+4. mtval <= additional exception info <br>
+   
 -> Exiting the trap vector: <br>
 1. PC <= mepc
 2. mie <= default interrupt permissions<br>

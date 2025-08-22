@@ -1,0 +1,5 @@
+./Pipeline/riscvcardB.pdf
+./Pipeline/waveform.vcd
+./Pipeline/a.out
+./Pipeline/Others/encoded_to_instr.py
+./Pipeline/Asm_Code/startup.hex

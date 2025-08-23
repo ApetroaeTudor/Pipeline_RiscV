@@ -9,12 +9,12 @@ The implementation of this 5 stage pipeline processing unit is based on the sing
 
 **Supported Instructions:**<br>
 -> R type: add,sub,or,and,slt,sltu<br>
--> I type: addi, lw, jalr<br>
+-> I type: addi, lw, lb, lh, lbu, lhu, jalr<br>
 -> J type: jal<br>
--> S type: sw<br>
+-> S type: sw, sh, sb<br>
 -> B type: beq, bne, blt, bge, bltu, bgeu<br>
 -> U type: lui, auipc<br>
--> I type zicsr: csrrw,csrrs,csrrc, csrrwi(WIP), csrrsi(WIP), csrrci(WIP)<br>
+-> I type zicsr: csrrw, csrrs, csrrc, csrrwi(WIP), csrrsi(WIP), csrrci(WIP)<br>
 
 **Memory Size:**<br>
 -> Harvard architecture<br>

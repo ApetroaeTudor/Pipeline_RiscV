@@ -16,7 +16,6 @@ module Data_Path(
     input i_fw_b_d,
 
     // -----------------------------------------
-    // input [1:0] i_pc_src_e, // 00 - pcp4, 01 - imm, 10 - rs1+imm
     input i_reg_write_d,
     input [1:0] i_result_src_d,
     input i_mem_write_d,
@@ -151,6 +150,9 @@ module Data_Path(
     wire [2:0] w_f3_e;
     wire [31:0] w_mret_target_pc_e;
     wire w_branch_taken_e;
+    reg r_store_byte_e;
+    reg r_store_half_e;
+
 
 
     wire [31:0] w_alu_out_m;
@@ -175,6 +177,8 @@ module Data_Path(
     wire [6:0] w_opcode_m;
     wire [2:0] w_f3_m;
     wire [11:0] w_imm_12b_m;
+    wire w_store_byte_m;
+    wire w_store_half_m;
 
 
 
@@ -192,6 +196,8 @@ module Data_Path(
     wire [6:0] w_opcode_w;
     wire [2:0] w_f3_w;
     wire [11:0] w_imm_12b_w;
+    reg [31:0] r_mem_to_reg_w;
+
 
 
     wire w_pc_in_txt;
@@ -278,7 +284,10 @@ module Data_Path(
         .i_alu_out_e(w_alu_out_e),
         .i_mem_write_e(w_mem_write_e),
         .i_ecall_e(w_ecall_e),
+        .i_f3_e(w_f3_e),
         .i_ms_12b_f(w_instr_f[31:20]),
+        .i_store_byte_e(r_store_byte_e),
+        .i_store_half_e(r_store_half_e),
         .o_exception_code_f(w_exception_code_f),
         .o_exception_code_e(w_exception_code_e)
     );
@@ -395,12 +404,12 @@ module Data_Path(
                                              .i_csr_d(w_csr_unit_csr_data_d),
                                              .i_imm_d(w_instr_d[31:20]),
 
-                                             .o_csr_reg_write_d(w_csr_reg_write_d), // to wb
-                                             .o_new_csr_d(w_new_csr_d), // to wb
-                                             .o_old_csr_d(w_old_csr_d), // to wb
-                                             .o_csr_rd_d(w_csr_rd_d), // to wb
-                                             .o_ecall_d(w_ecall_d), // to ex
-                                             .o_mret_d(w_mret_d)); // to ex
+                                             .o_csr_reg_write_d(w_csr_reg_write_d), 
+                                             .o_new_csr_d(w_new_csr_d),
+                                             .o_old_csr_d(w_old_csr_d),
+                                             .o_csr_rd_d(w_csr_rd_d),
+                                             .o_ecall_d(w_ecall_d),
+                                             .o_mret_d(w_mret_d));
 
     Imm_32 Imm_32_Inst(.i_imm_ctl(i_imm_src_d),
                        .i_instr_bits(w_instr_d[31:7]),
@@ -496,6 +505,9 @@ module Data_Path(
     assign o_f3_e = w_f3_e;
     assign o_imm_e = w_imm_12b_e;
 
+
+
+
     assign w_mret_target_pc_e = (i_fw_mret_e == 2'b01)?w_new_csr_m:
                                 (i_fw_mret_e == 2'b10)?w_new_csr_w: w_mepc_e;
 
@@ -529,6 +541,26 @@ module Data_Path(
 
     assign w_pc_trap_sel_e =  (^w_exception_code_e===1'bx)?1'b0: // to be fixed
                               (w_exception_code_e!=4'b1111)?1'b1:1'b0;
+
+
+    always@(*)
+    begin
+        casex(w_f3_e)  // i dont care if the signals are asserted on non sw instructions because the data won't be written anyway
+            `SB_F3:begin
+                r_store_byte_e = 1'b1;
+                r_store_half_e = 1'b0;
+            end
+            `SH_F3:begin
+                r_store_byte_e = 1'b0;
+                r_store_half_e = 1'b1;
+            end
+            default:begin
+                r_store_byte_e = 1'b0;
+                r_store_half_e = 1'b0;
+            end
+        endcase
+    end
+  
 
 
     ALU_Main ALU_Main_Inst(.i_op_a(w_alu_op_a_e),
@@ -569,6 +601,9 @@ module Data_Path(
                        .i_f3_e(w_f3_e),
                        .i_imm_12b_e(w_imm_12b_e),
                        
+                       .i_store_byte_e(r_store_byte_e),
+                       .i_store_half_e(r_store_half_e),
+                       
                        .o_if_id_flush_exception_m(w_if_id_flush_exception_m),
                        .o_id_ex_flush_exception_m(w_id_ex_flush_exception_m),
                        .o_rd_m(w_rd_m),
@@ -583,6 +618,9 @@ module Data_Path(
                        .o_f3_m(w_f3_m),
                        .o_imm_12b_m(w_imm_12b_m),
 
+                       .o_store_byte_m(w_store_byte_m),
+                       .o_store_half_m(w_store_half_m),
+
                        .o_csr_reg_write_m(w_csr_reg_write_m),
                        .o_new_csr_m(w_new_csr_m),
                        .o_old_csr_m(w_old_csr_m),
@@ -590,8 +628,7 @@ module Data_Path(
 
     // MEM ------------------------------------------------------------
 
-    
-  
+
     Mem_Calculation_Unit Mem_Calculation_Unit_Inst(.i_addr_m(w_alu_out_m),
                                                    .o_effective_addr_m(w_effective_addr_m),
                                                    .o_dm_en(w_dm_en_m));
@@ -601,7 +638,9 @@ module Data_Path(
                            .i_rst(i_rst),
                            .i_mem_write(w_mem_write_m),
                            .i_mem_addr(w_effective_addr_m),
-                           .i_mem_data(w_haz_b_m),
+                           .i_mem_data(w_haz_rs2_e),
+                           .i_store_byte(w_store_byte_m),
+                           .i_store_half(w_store_half_m),
                            .o_mem_data(w_mem_out_m));
 
     assign o_rd_m = w_rd_m;
@@ -647,13 +686,34 @@ module Data_Path(
                        .o_old_csr_w(w_old_csr_w),
                        .o_csr_rd_w(w_csr_rd_w));
 
-    // w ------------------------------------------------------------
+    // WB ------------------------------------------------------------
 
+
+    always@(*)
+    begin
+        casex(w_f3_w)
+        `LB_F3:begin
+            r_mem_to_reg_w = { {24{w_mem_out_w[7]}},w_mem_out_w[7:0]  };
+        end
+        `LH_F3:begin
+            r_mem_to_reg_w = { {16{w_mem_out_w[15]}},w_mem_out_w[15:0]};
+        end
+        `LBU_F3:begin
+            r_mem_to_reg_w = { 24'b0, w_mem_out_w[7:0] };
+        end
+        `LHU_F3:begin
+            r_mem_to_reg_w = { 16'b0,w_mem_out_w[15:0] };
+        end
+        default:begin
+            r_mem_to_reg_w = w_mem_out_w;
+        end
+        endcase
+    end
 
     assign w_result_w = 
     (!w_csr_reg_write_w)?
         ((w_result_src_w==2'b00)?w_alu_out_w:
-        (w_result_src_w==2'b01)?w_mem_out_w:
+        (w_result_src_w==2'b01)?r_mem_to_reg_w:
         (w_result_src_w==2'b10)?w_pc_p4_w:32'b0):
     (w_csr_reg_write_w)?w_old_csr_w:32'b0;
 
@@ -663,13 +723,7 @@ module Data_Path(
     assign o_f3_w = w_f3_w;
     assign o_imm_w = w_imm_12b_w;
 
-    // ~w ------------------------------------------------------------
-
-
-
-
-
-
+    // ~WB ------------------------------------------------------------
 
 
 

@@ -14,7 +14,7 @@ module Mem_Instr(
 
     integer i;
 
-    `ifdef DEBUG
+    `ifndef DEBUG
         reg [31:0] temp_mem [(1<<18)-1:0];
 
         initial begin

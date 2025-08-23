@@ -1,6 +1,7 @@
 // debug define, comment out to load instructions from generated hexdump, uncomment to load instructions from manually written .mem file
   // `define DEBUG
 
+
 // risc-v opcodes implemented
   `define OP_R_TYPE 7'b011_0011
   `define OP_I_TYPE_LW 7'b000_0011
@@ -93,6 +94,16 @@
   `define BLTU_F3 3'b110
   `define BGEU_F3 3'b111
 
+  `define LB_F3 3'b000
+  `define LH_F3 3'b001
+  `define LW_F3 3'b010
+  `define LBU_F3 3'b100
+  `define LHU_F3 3'b101
+
+  `define SB_F3 3'b000
+  `define SH_F3 3'b001
+  `define SW_F3 3'b010
+
 
   `define CSR_CONTROL_F3 3'b000
   `define CSR_CSRRW_F3 3'b001
@@ -113,6 +124,12 @@
   `define mtval 12'h343
 
   `define mie_DEFAULT_VALUE 32'b0000_0000_0000_0000_0000_0000_1000_0010
+
+
+  `define byte_3 31:24
+  `define byte_2 23:16
+  `define byte_1 15:8
+  `define byte_0 7:0 
 
 // registers
   `define zero 5'b000_00 //x0

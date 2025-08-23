@@ -5,13 +5,16 @@ module Mem_Data(
     input i_mem_write,
     input [31:0] i_mem_addr,
     input [31:0] i_mem_data,
-    output [31:0] o_mem_data
+    output [31:0] o_mem_data,
+
+    input i_store_byte,
+    input i_store_half
 
 );
 
     reg [7:0] r_mem_data [(1<<20)-1:0];
 
-    assign {o_mem_data[7:0] , o_mem_data[15:8] , o_mem_data[23:16] , o_mem_data[31:24] } = 
+    assign {o_mem_data[`byte_0] , o_mem_data[`byte_1] , o_mem_data[`byte_2] , o_mem_data[`byte_3] } = 
            {r_mem_data[i_mem_addr] , r_mem_data[i_mem_addr+1] , r_mem_data[i_mem_addr+2] , r_mem_data[i_mem_addr+3]};
 
     
@@ -36,10 +39,22 @@ module Mem_Data(
         begin
             if(i_mem_write)
             begin
-                r_mem_data[i_mem_addr] <= i_mem_data[7:0];
-                r_mem_data[i_mem_addr+1] <= i_mem_data[15:8];
-                r_mem_data[i_mem_addr+2] <= i_mem_data[23:16];
-                r_mem_data[i_mem_addr+3] <= i_mem_data[31:24];
+                if(i_store_byte) begin
+                    r_mem_data[i_mem_addr] <= i_mem_data[7:0];
+                end
+                else if(!i_store_byte && i_store_half) begin
+                    r_mem_data[i_mem_addr] <= i_mem_data[7:0];
+                    r_mem_data[i_mem_addr+1] <= i_mem_data[15:8];
+                end
+                else begin
+                    r_mem_data[i_mem_addr] <= i_mem_data[7:0];
+                    r_mem_data[i_mem_addr+1] <= i_mem_data[15:8];
+                    r_mem_data[i_mem_addr+2] <= i_mem_data[23:16];
+                    r_mem_data[i_mem_addr+3] <= i_mem_data[31:24];
+                end
+                
+                
+                
             end
         end
 

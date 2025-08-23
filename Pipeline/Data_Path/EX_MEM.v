@@ -23,6 +23,9 @@ module EX_MEM(
     input [2:0] i_f3_e,
     input [11:0] i_imm_12b_e,
 
+    input i_store_byte_e,
+    input i_store_half_e,
+
     output o_if_id_flush_exception_m,
     output o_id_ex_flush_exception_m,
 
@@ -37,6 +40,9 @@ module EX_MEM(
     output [6:0] o_opcode_m,
     output [2:0] o_f3_m,
     output [11:0] o_imm_12b_m,
+
+    output o_store_byte_m,
+    output o_store_half_m,
 
     output o_csr_reg_write_m,
     output [31:0] o_new_csr_m,
@@ -98,6 +104,12 @@ module EX_MEM(
     reg r_mem_write_e;
     assign o_mem_write_m = r_mem_write_e;
 
+    reg r_store_byte_e;
+    assign o_store_byte_m = r_store_byte_e;
+
+    reg r_store_half_e;
+    assign o_store_half_m = r_store_half_e;
+
     always@(posedge i_clk)
     begin
         if(i_rst || w_exception_ex_stage )
@@ -118,6 +130,8 @@ module EX_MEM(
             r_opcode_e<=0;
             r_f3_e<=0;
             r_imm_12b_e<=0;
+            r_store_byte_e =0;
+            r_store_half_e =0;
 
         end
         else if(i_clk_en)
@@ -138,6 +152,9 @@ module EX_MEM(
             r_opcode_e<=i_opcode_e;
             r_f3_e<=i_f3_e;
             r_imm_12b_e<=i_imm_12b_e;
+
+            r_store_byte_e <= i_store_byte_e;
+            r_store_half_e <= i_store_half_e;
         end
     end
 

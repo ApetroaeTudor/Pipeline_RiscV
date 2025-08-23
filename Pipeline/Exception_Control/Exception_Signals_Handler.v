@@ -10,9 +10,14 @@ module Exception_Signals_Handler(
     input [31:0] i_alu_out_e,
     input i_mem_write_e,
     input i_ecall_e,
+    input i_store_byte_e,
+    input i_store_half_e,
+    input [2:0] i_f3_e,
 
     input i_reset_permission,
     input i_trap_permission,
+
+ 
 
 
 
@@ -45,7 +50,7 @@ assign o_exception_code_f =
       i_opcode_f!=`OP_I_TYPE_CSR                     &&
       i_opcode_f!=`OP_S_TYPE                         &&
       i_opcode_f!=`OP_J_TYPE                         &&
-      i_opcode_f!=`OP_B_TYPE                     &&
+      i_opcode_f!=`OP_B_TYPE                         &&
       i_opcode_f!=`OP_U_TYPE_LUI                     &&
       i_opcode_f!=`OP_U_TYPE_AUIPC                   &&
       i_opcode_f!=`OP_NOP                            ||
@@ -71,19 +76,19 @@ assign o_exception_code_f =
        !(w_addr_in_stk) && !(w_addr_in_csr_stk)  )
        ?`E_SP_OUT_OF_RANGE:
     ( i_res_src_e == 2'b01 &&
-      i_alu_out_e[1:0]!=2'b00)?`E_LOAD_ADDR_MISALIGNED:
+      ((i_alu_out_e[1:0]!=2'b00 && i_f3_e!=`LB_F3 && i_f3_e!=`LH_F3 && i_f3_e!=`LBU_F3 && i_f3_e!=`LHU_F3) ||
+      ((i_alu_out_e[0]!=1'b0 && i_f3_e!=`LB_F3 && i_f3_e!=`LBU_F3 && (i_f3_e==`LH_F3  || i_f3_e==`LHU_F3)))))?`E_LOAD_ADDR_MISALIGNED:
 
     ( i_res_src_e == 2'b01 &&
-      (!i_alu_out_e[20] || 
-      (i_pc_f[19] && !i_pc_f[18] && !i_trap_permission) ) )?`E_LOAD_ACCESS_FAULT:
+      (!i_alu_out_e[20] ) )?`E_LOAD_ACCESS_FAULT:
 
 
     ( i_mem_write_e &&
-      i_alu_out_e[1:0]!=2'b00)?`E_STORE_ADDR_MISALIGNED:
+     ((i_alu_out_e[1:0]!=2'b00 && !i_store_byte_e && !i_store_half_e) ||
+      (i_alu_out_e[0]!=1'b0 && !i_store_byte_e && i_store_half_e)      ))?`E_STORE_ADDR_MISALIGNED:
 
     ( i_mem_write_e &&
-      (!i_alu_out_e[20] ||
-      (i_pc_f[19] && !i_pc_f[18] && !i_trap_permission)) )?`E_STORE_ADDR_FAULT:
+      (!i_alu_out_e[20]) )?`E_STORE_ADDR_FAULT:
       
     (i_ecall_e)?`E_ECALL:`NO_E; 
     

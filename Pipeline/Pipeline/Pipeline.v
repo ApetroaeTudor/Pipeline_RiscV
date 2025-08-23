@@ -24,6 +24,8 @@ module Pipeline(
     wire [1:0] w_fw_normal_into_csr_d;
     wire [1:0] w_fw_csr_csr_reg_d;
     wire [1:0] w_fw_csr_csr_csr_d;
+    wire w_alu_src_opb_d;
+    wire [1:0] w_alu_src_opa_d;
 
 
 
@@ -74,7 +76,7 @@ module Pipeline(
     wire w_mem_write;
     wire w_reg_write;
     wire [2:0] w_alu_ctl;
-    wire w_alu_src;
+ 
     wire [2:0] w_imm_src;
 
     wire w_f7_b6;
@@ -99,7 +101,8 @@ module Pipeline(
                              .i_jmp_d(w_jmp_d),
                              .i_branch_d(w_branch),
                              .i_alu_ctl_d(w_alu_ctl),
-                             .i_alu_src_d(w_alu_src),
+                             .i_alu_src_opb_d(w_alu_src_opb_d),
+                             .i_alu_src_opa_d(w_alu_src_opa_d),
                              .i_imm_src_d(w_imm_src),
 
                              .i_fw_csr_into_normal_a_e(w_fw_csr_into_normal_a_e),
@@ -155,7 +158,8 @@ module Pipeline(
                                    .o_mem_write(w_mem_write),
                                    .o_reg_write(w_reg_write),
                                    .o_alu_ctl(w_alu_ctl),
-                                   .o_alu_src(w_alu_src),
+                                   .o_alu_src_opb(w_alu_src_opb_d),
+                                   .o_alu_src_opa(w_alu_src_opa_d),
                                    .o_imm_src(w_imm_src));
 
 

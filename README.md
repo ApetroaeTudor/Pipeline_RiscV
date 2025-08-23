@@ -8,12 +8,12 @@ The implementation of this 5 stage pipeline processing unit is based on the sing
 -> Write-Back (WB)<br>
 
 **Supported Instructions:**<br>
--> R type: add,sub,or,and,slt<br>
+-> R type: add,sub,or,and,slt,sltu<br>
 -> I type: addi, lw, jalr<br>
 -> J type: jal<br>
 -> S type: sw<br>
--> B type: beq, blt(WIP), bge(WIP)<br>
--> U type: lui, auipc(WIP)<br>
+-> B type: beq, bne, blt, bge, bltu, bgeu<br>
+-> U type: lui, auipc<br>
 -> I type zicsr: csrrw,csrrs,csrrc, csrrwi(WIP), csrrsi(WIP), csrrci(WIP)<br>
 
 **Memory Size:**<br>

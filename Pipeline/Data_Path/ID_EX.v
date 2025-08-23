@@ -20,7 +20,9 @@ module ID_EX(
     input i_jmp_d,
     input i_branch_d,
     input [2:0] i_alu_ctl_d,
-    input i_alu_src_d,
+    input i_alu_src_opb_d,
+    input [1:0] i_alu_src_opa_d,
+
 
     input [6:0] i_opcode_d,
     input i_csr_reg_write_d,
@@ -54,7 +56,8 @@ module ID_EX(
     output o_jmp_e,
     output o_branch_e,
     output [2:0] o_alu_ctl_e,
-    output o_alu_src_e,
+    output o_alu_src_opb_e,
+    output [1:0] o_alu_src_opa_e,
     output [6:0] o_opcode_e,
     
     output o_csr_reg_write_e,
@@ -142,8 +145,12 @@ module ID_EX(
     reg [2:0] r_alu_ctl_e;
     assign o_alu_ctl_e = r_alu_ctl_e;
 
-    reg r_alu_src_e;
-    assign o_alu_src_e = r_alu_src_e;
+    reg r_alu_src_opb_e;
+    assign o_alu_src_opb_e = r_alu_src_opb_e;
+
+
+    reg [1:0] r_alu_src_opa_e;
+    assign o_alu_src_opa_e = r_alu_src_opa_e;
 
     always@(posedge i_clk)
     begin
@@ -174,7 +181,9 @@ module ID_EX(
             r_jmp_e<=0;
             r_branch_e<=0;
             r_alu_ctl_e<=0;
-            r_alu_src_e<=0;
+            r_alu_src_opb_e<=0;
+            r_alu_src_opa_e<=0;
+
         end
         else if(i_clk_en)
         begin
@@ -204,7 +213,8 @@ module ID_EX(
             r_jmp_e<=i_jmp_d;
             r_branch_e<=i_branch_d;
             r_alu_ctl_e<=i_alu_ctl_d;
-            r_alu_src_e<=i_alu_src_d;
+            r_alu_src_opb_e<=i_alu_src_opb_d;
+            r_alu_src_opa_e<=i_alu_src_opa_d;
         end
         
     end

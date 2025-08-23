@@ -9,7 +9,7 @@ wire [1:0] t_w_pc_src;
 wire t_w_mem_write;
 wire t_w_reg_write;
 wire [2:0] t_w_alu_ctl;
-wire t_w_alu_src;
+wire t_w_alu_src_opb;
 wire [1:0] t_w_imm_src;
 
 Control_Path Control_Path_Inst(.i_opcode(t_r_opcode),
@@ -21,7 +21,7 @@ Control_Path Control_Path_Inst(.i_opcode(t_r_opcode),
                                .o_mem_write(t_w_mem_write),
                                .o_reg_write(t_w_reg_write),
                                .o_alu_ctl(t_w_alu_ctl),
-                               .o_alu_src(t_w_alu_src),
+                               .o_alu_src_opb(t_w_alu_src_opb),
                                .o_imm_src(t_w_imm_src));
 
 

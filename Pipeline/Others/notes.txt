@@ -1,8 +1,9 @@
 Extra instructions:
 zicsr extension:
 -> csrrw,csrrs,csrrc
-u type: lui, auipc(x)
-b type: bne(x), blt(x), bge(x)
+u type: lui, auipc
+b type: bne, blt, bge
+sltu, bltu bgeu
 
 if an exception is detected in FETCH -> 
 load exception code[4:0] in if_id

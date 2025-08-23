@@ -10,7 +10,8 @@ module Control_Path(
     output o_mem_write,
     output o_reg_write,
     output [2:0] o_alu_ctl,
-    output o_alu_src,
+    output o_alu_src_opb,
+    output [1:0] o_alu_src_opa,
     output [2:0] o_imm_src
 );
 
@@ -27,7 +28,8 @@ module Control_Path(
                                    .o_jmp(w_jmp),
                                    .o_branch(w_branch),
                                    .o_alu_op(w_alu_op),
-                                   .o_alu_src(o_alu_src),
+                                   .o_alu_src_opb(o_alu_src_opb),
+                                   .o_alu_src_opa(o_alu_src_opa),
                                    .o_imm_src(o_imm_src));
 
 

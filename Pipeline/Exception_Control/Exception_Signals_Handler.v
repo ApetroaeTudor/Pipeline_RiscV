@@ -38,15 +38,16 @@ wire w_addr_in_csr_stk = i_alu_out_e[20] && i_alu_out_e[19] && !i_alu_out_e[18];
 
 assign o_exception_code_f = 
     ( i_pc_f[1:0] !=2'b00 )?`E_FETCH_ADDR_MISALIGNED:
-    ( i_opcode_f!=`OP_R_TYPE                          &&
+    ( i_opcode_f!=`OP_R_TYPE                         &&
       i_opcode_f!=`OP_I_TYPE_LW                      &&
       i_opcode_f!=`OP_I_TYPE_ADDI                    &&
       i_opcode_f!=`OP_I_TYPE_JALR                    &&
       i_opcode_f!=`OP_I_TYPE_CSR                     &&
       i_opcode_f!=`OP_S_TYPE                         &&
       i_opcode_f!=`OP_J_TYPE                         &&
-      i_opcode_f!=`OP_B_TYPE_BEQ                     &&
-      i_opcode_f!=`OP_U_TYPE                         &&
+      i_opcode_f!=`OP_B_TYPE                     &&
+      i_opcode_f!=`OP_U_TYPE_LUI                     &&
+      i_opcode_f!=`OP_U_TYPE_AUIPC                   &&
       i_opcode_f!=`OP_NOP                            ||
       (w_txt_en && (i_opcode_f == `OP_I_TYPE_CSR) && i_ms_12b_f!=0  ) || // invalid opcode
       (i_pc_f[20])                                                    || // pc access outside the instruction mem

@@ -23,7 +23,8 @@ module Data_Path(
     input i_jmp_d,
     input i_branch_d,
     input [2:0] i_alu_ctl_d,
-    input i_alu_src_d,
+    input i_alu_src_opb_d,
+    input [1:0] i_alu_src_opa_d,
     input [2:0] i_imm_src_d, // outputs from Control Path
     // -----------------------------------------
 
@@ -58,22 +59,22 @@ module Data_Path(
 
 
 
-    output [6:0] o_opcode_d, //
-    output [2:0] o_f3_d, //
-    output [11:0] o_imm_d, //
+    output [6:0] o_opcode_d, 
+    output [2:0] o_f3_d, 
+    output [11:0] o_imm_d, 
 
-    output [6:0] o_opcode_e, // 
-    output [2:0] o_f3_e, //
-    output [11:0] o_imm_e, //
-    output o_mret_e, //
+    output [6:0] o_opcode_e,  
+    output [2:0] o_f3_e, 
+    output [11:0] o_imm_e, 
+    output o_mret_e, 
 
-    output [6:0] o_opcode_m, //
-    output [2:0] o_f3_m, //
-    output [11:0] o_imm_m, //
+    output [6:0] o_opcode_m, 
+    output [2:0] o_f3_m, 
+    output [11:0] o_imm_m, 
 
-    output [6:0] o_opcode_w, //
-    output [2:0] o_f3_w, //
-    output [11:0] o_imm_w //
+    output [6:0] o_opcode_w, 
+    output [2:0] o_f3_w, 
+    output [11:0] o_imm_w 
 
 );
 
@@ -124,10 +125,12 @@ module Data_Path(
     wire w_jmp_e;
     wire w_branch_e;
     wire [2:0] w_alu_ctl_e;
-    wire w_alu_src_e;
+    wire w_alu_src_opb_e;
+    wire [1:0] w_alu_src_opa_e;
     wire [31:0] w_haz_rs1_e;
     wire [31:0] w_haz_rs2_e;
     wire [31:0] w_alu_op_b_e;
+    wire [31:0] w_alu_op_a_e;
     wire w_zero_e;
     wire [6:0] w_opcode_e;
     wire [1:0] w_pc_src_e;
@@ -147,6 +150,7 @@ module Data_Path(
     wire [11:0] w_imm_12b_e;
     wire [2:0] w_f3_e;
     wire [31:0] w_mret_target_pc_e;
+    wire w_branch_taken_e;
 
 
     wire [31:0] w_alu_out_m;
@@ -437,7 +441,8 @@ module Data_Path(
                      .i_jmp_d(i_jmp_d),
                      .i_branch_d(i_branch_d),
                      .i_alu_ctl_d(i_alu_ctl_d),
-                     .i_alu_src_d(i_alu_src_d),
+                     .i_alu_src_opb_d(i_alu_src_opb_d),
+                     .i_alu_src_opa_d(i_alu_src_opa_d),
                      .i_opcode_d(w_instr_d[6:0]),
                      .i_id_ex_flush_exception_m(w_id_ex_flush_exception_m),
                      .i_pc_d(w_pc_d),
@@ -471,7 +476,8 @@ module Data_Path(
                      .o_jmp_e(w_jmp_e),
                      .o_branch_e(w_branch_e),
                      .o_alu_ctl_e(w_alu_ctl_e),
-                     .o_alu_src_e(w_alu_src_e),
+                     .o_alu_src_opb_e(w_alu_src_opb_e),
+                     .o_alu_src_opa_e(w_alu_src_opa_e),
                      .o_opcode_e(w_opcode_e));
 
     // EX ------------------------------------------------------------
@@ -509,23 +515,34 @@ module Data_Path(
                          (i_fw_b_e==2'b01)?w_result_w:w_regs_do2_e;
 
 
-    assign w_alu_op_b_e = (w_alu_src_e==1'b0)?w_haz_rs2_e:w_imm_32b_e;
+    assign w_alu_op_a_e = (w_alu_src_opa_e==2'b00)?w_haz_rs1_e:
+                          (w_alu_src_opa_e==2'b01)?w_pc_e:32'b0; // for lui
+    assign w_alu_op_b_e = (w_alu_src_opb_e==1'b0)?w_haz_rs2_e:w_imm_32b_e;
+
 
 
     assign w_pc_src_e =
-    ((w_zero_e && w_branch_e) || (w_jmp_e && w_opcode_e == `OP_J_TYPE)) ? 2'b01:
+    (w_branch_taken_e || (w_jmp_e && w_opcode_e == `OP_J_TYPE)) ? 2'b01:
     (w_jmp_e && w_opcode_e == `OP_I_TYPE_JALR)?2'b10:
     2'b00; 
 
-    assign w_pc_trap_sel_e =  (^w_exception_code_e===1'bx)?1'b0:
+
+    assign w_pc_trap_sel_e =  (^w_exception_code_e===1'bx)?1'b0: // to be fixed
                               (w_exception_code_e!=4'b1111)?1'b1:1'b0;
 
 
-    ALU_Main ALU_Main_Inst(.i_op_a(w_haz_rs1_e),
+    ALU_Main ALU_Main_Inst(.i_op_a(w_alu_op_a_e),
                            .i_op_b(w_alu_op_b_e),
                            .i_alu_op(w_alu_ctl_e),
                            .o_zero(w_zero_e),
                            .o_alu_out(w_alu_out_e));
+
+
+    Branch_Decision Branch_Decision_Inst(.i_alu_out_lsb_e(w_alu_out_e[0]),
+                                         .i_f3_e(w_f3_e),
+                                         .i_branch_e(w_branch_e),
+                                         .i_zero_e(w_zero_e),
+                                         .o_branch_taken_e(w_branch_taken_e));
 
     // ~EX ------------------------------------------------------------
 

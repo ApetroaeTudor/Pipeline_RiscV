@@ -8,13 +8,14 @@ The implementation of this 5 stage pipeline processing unit is based on the sing
 -> Write-Back (WB)<br>
 
 **Supported Instructions:**<br>
--> R type: add,sub,or,and,slt,sltu<br>
+-> R type: add, sub, or, and, slt, sltu<br>
 -> I type: addi, lw, lb, lh, lbu, lhu, jalr<br>
 -> J type: jal<br>
 -> S type: sw, sh, sb<br>
 -> B type: beq, bne, blt, bge, bltu, bgeu<br>
 -> U type: lui, auipc<br>
 -> I type zicsr: csrrw, csrrs, csrrc, csrrwi(WIP), csrrsi(WIP), csrrci(WIP)<br>
+And the rest of the rv32i base instruction set.<br>
 
 **Memory Size:**<br>
 -> Harvard architecture<br>

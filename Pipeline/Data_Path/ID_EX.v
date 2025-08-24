@@ -22,6 +22,7 @@ module ID_EX(
     input [2:0] i_alu_ctl_d,
     input i_alu_src_opb_d,
     input [1:0] i_alu_src_opa_d,
+    input [1:0] i_alu_shift_d,
 
 
     input [6:0] i_opcode_d,
@@ -49,6 +50,7 @@ module ID_EX(
     output [31:0] o_mepc_e,
     output [2:0] o_f3_e,
     output [11:0] o_imm_12b_e,
+    output [1:0] o_alu_shift_e,
 
     output o_reg_wr_e,
     output [1:0] o_result_src_e,
@@ -152,6 +154,9 @@ module ID_EX(
     reg [1:0] r_alu_src_opa_e;
     assign o_alu_src_opa_e = r_alu_src_opa_e;
 
+    reg [1:0] r_alu_shift_e;
+    assign o_alu_shift_e = r_alu_shift_e;
+
     always@(posedge i_clk)
     begin
         if(i_rst || w_id_ex_final_flush)
@@ -174,6 +179,7 @@ module ID_EX(
             r_mepc_e<=0;
             r_f3_e<=0;
             r_imm_12b_e<=0;
+            r_alu_shift_e<=0;
 
             r_reg_wr_e<=0;
             r_result_src_e<=0;
@@ -206,6 +212,7 @@ module ID_EX(
             r_mepc_e<=i_mepc_d;
             r_f3_e<=i_f3_d;
             r_imm_12b_e<=i_imm_12b_d;
+            r_alu_shift_e<=i_alu_shift_d;
 
             r_reg_wr_e<=i_reg_wr_d;
             r_result_src_e<=i_result_src_d;

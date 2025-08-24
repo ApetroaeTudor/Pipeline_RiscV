@@ -12,15 +12,18 @@ module Control_Path(
     output [2:0] o_alu_ctl,
     output o_alu_src_opb,
     output [1:0] o_alu_src_opa,
-    output [2:0] o_imm_src
+    output [2:0] o_imm_src,
+    output [1:0] o_alu_shift,
+
+    output o_imm_signed
 );
 
-   
+    assign o_imm_signed = (i_f3!=3'b011)?1'b1:1'b0;
 
 
     wire w_jmp;
     wire w_branch;
-    wire [1:0] w_alu_op;
+    wire [2:0] w_alu_op;
     Control_Unit Control_Unit_Inst(.i_opcode(i_opcode),
                                    .o_result_src(o_result_src),
                                    .o_mem_write(o_mem_write),
@@ -36,7 +39,8 @@ module Control_Path(
     Control_ALU Control_ALU_Inst(.i_alu_op(w_alu_op),
                                  .i_f3(i_f3),
                                  .i_f7_b6(i_f7_b6),
-                                 .o_alu_ctl(o_alu_ctl));
+                                 .o_alu_ctl(o_alu_ctl),
+                                 .o_alu_shift(o_alu_shift));
 
     assign o_branch = w_branch;
     assign o_jmp = w_jmp;

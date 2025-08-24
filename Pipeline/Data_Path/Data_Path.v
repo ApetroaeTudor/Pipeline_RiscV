@@ -24,7 +24,9 @@ module Data_Path(
     input [2:0] i_alu_ctl_d,
     input i_alu_src_opb_d,
     input [1:0] i_alu_src_opa_d,
-    input [2:0] i_imm_src_d, // outputs from Control Path
+    input [2:0] i_imm_src_d,
+    input [1:0] i_alu_shift_d,
+    input i_sign_ext_d, // outputs from Control Path
     // -----------------------------------------
 
 
@@ -152,6 +154,7 @@ module Data_Path(
     wire w_branch_taken_e;
     reg r_store_byte_e;
     reg r_store_half_e;
+    wire [1:0] w_alu_shift_e;
 
 
 
@@ -412,6 +415,7 @@ module Data_Path(
                                              .o_mret_d(w_mret_d));
 
     Imm_32 Imm_32_Inst(.i_imm_ctl(i_imm_src_d),
+                       .i_sign_ext(i_sign_ext_d),
                        .i_instr_bits(w_instr_d[31:7]),
                        .o_extended_imm(w_imm_32b_d));
 
@@ -458,6 +462,7 @@ module Data_Path(
                      .i_mepc_d(w_mepc_d),
                      .i_f3_d(w_instr_d[14:12]),
                      .i_imm_12b_d(w_instr_d[31:20]),
+                     .i_alu_shift_d(i_alu_shift_d),
 
 
                      .o_pc_e(w_pc_e),
@@ -478,6 +483,7 @@ module Data_Path(
                      .o_mret_e(w_mret_e),
                      .o_f3_e(w_f3_e),
                      .o_imm_12b_e(w_imm_12b_e),
+                     .o_alu_shift_e(w_alu_shift_e),
 
                      .o_reg_wr_e(w_reg_write_e),
                      .o_result_src_e(w_result_src_e),
@@ -566,6 +572,7 @@ module Data_Path(
     ALU_Main ALU_Main_Inst(.i_op_a(w_alu_op_a_e),
                            .i_op_b(w_alu_op_b_e),
                            .i_alu_op(w_alu_ctl_e),
+                           .i_alu_shift(w_alu_shift_e),
                            .o_zero(w_zero_e),
                            .o_alu_out(w_alu_out_e));
 

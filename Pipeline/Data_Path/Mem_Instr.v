@@ -14,7 +14,15 @@ module Mem_Instr(
 
     integer i;
 
-    `ifndef DEBUG
+    `ifdef DEBUG
+          initial begin
+            for(i=0;i<(1<<20)-1;i=i+1)
+            begin
+                r_mem_instr[i]=0;
+            end
+            $readmemh("./Mem_Files/TRAP_VECTOR_TEST.mem",r_mem_instr);
+        end
+    `else
         reg [31:0] temp_mem [(1<<18)-1:0];
 
         initial begin
@@ -26,14 +34,6 @@ module Mem_Instr(
                 r_mem_instr[ i*4 + 2 ] = temp_mem[i][15:8];
                 r_mem_instr[ i*4 + 3 ] = temp_mem[i][7:0];
             end
-        end
-    `else
-        initial begin
-            for(i=0;i<(1<<20)-1;i=i+1)
-            begin
-                r_mem_instr[i]=0;
-            end
-            $readmemh("./Mem_Files/TRAP_VECTOR_TEST.mem",r_mem_instr);
         end
     `endif
 

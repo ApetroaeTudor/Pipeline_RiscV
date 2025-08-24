@@ -26,6 +26,8 @@ module Pipeline(
     wire [1:0] w_fw_csr_csr_csr_d;
     wire w_alu_src_opb_d;
     wire [1:0] w_alu_src_opa_d;
+    wire [1:0] w_alu_shift_d;
+    wire w_sign_ext_d;
 
 
 
@@ -104,6 +106,8 @@ module Pipeline(
                              .i_alu_src_opb_d(w_alu_src_opb_d),
                              .i_alu_src_opa_d(w_alu_src_opa_d),
                              .i_imm_src_d(w_imm_src),
+                             .i_alu_shift_d(w_alu_shift_d),
+                             .i_sign_ext_d(w_sign_ext_d),
 
                              .i_fw_csr_into_normal_a_e(w_fw_csr_into_normal_a_e),
                              .i_fw_csr_into_normal_b_e(w_fw_csr_into_normal_b_e),
@@ -160,7 +164,9 @@ module Pipeline(
                                    .o_alu_ctl(w_alu_ctl),
                                    .o_alu_src_opb(w_alu_src_opb_d),
                                    .o_alu_src_opa(w_alu_src_opa_d),
-                                   .o_imm_src(w_imm_src));
+                                   .o_imm_src(w_imm_src),
+                                   .o_alu_shift(w_alu_shift_d),
+                                   .o_imm_signed(w_sign_ext_d));
 
 
     Hazard_Unit Hazard_Unit_Inst(.i_opcode_d(w_opcode_d),

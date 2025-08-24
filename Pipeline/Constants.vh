@@ -1,11 +1,10 @@
-// debug define, comment out to load instructions from generated hexdump, uncomment to load instructions from manually written .mem file
-  // `define DEBUG
+  `define DEBUG
 
 
 // risc-v opcodes implemented
   `define OP_R_TYPE 7'b011_0011
-  `define OP_I_TYPE_LW 7'b000_0011
-  `define OP_I_TYPE_ADDI 7'b001_0011
+  `define OP_I_TYPE_LOAD 7'b000_0011
+  `define OP_I_TYPE_OPERATION 7'b001_0011
   `define OP_I_TYPE_JALR 7'b110_0111
   `define OP_S_TYPE 7'b010_0011
   `define OP_J_TYPE 7'b110_1111
@@ -50,17 +49,27 @@
   
 
 // alu control
-  `define ALU_OP_ADD 2'b00
-  `define ALU_OP_SUB 2'b01
-  `define ALU_OP_SPECIAL 2'b10
-  `define ALU_OP_COMPARISON 2'b11
+  `define ALU_OP_ADD 3'b000
+  `define ALU_OP_SUB 3'b001
+  `define ALU_OP_R 3'b010
+  `define ALU_OP_COMPARISON 3'b011
+  `define ALU_OP_I 3'b100
 
   `define ALU_CTL_ADD 3'b000
   `define ALU_CTL_SUB 3'b001
-  `define ALU_CTL_OR 3'b011
   `define ALU_CTL_AND 3'b010
-  `define ALU_CTL_LESS_SIG 3'b101
+  `define ALU_CTL_OR 3'b011
   `define ALU_CTL_LESS_UNS 3'b100
+  `define ALU_CTL_LESS_SIG 3'b101
+  `define ALU_CTL_XOR 3'b110
+  `define ALU_CTL_SHIFT 3'b111
+
+
+
+  `define ALU_SHIFT_SLL 2'b01
+  `define ALU_SHIFT_SRL 2'b10
+  `define ALU_SHIFT_SRA 2'b11
+
 
 
 // imm ctl
@@ -99,6 +108,20 @@
   `define LW_F3 3'b010
   `define LBU_F3 3'b100
   `define LHU_F3 3'b101
+
+  `define ADD_F3 3'b000 
+  `define SLTU_F3 3'b011 
+  `define SLT_F3 3'b010 
+  `define XOR_F3 3'b100
+  `define OR_F3 3'b110 
+  `define AND_F3 3'b111 
+
+  `define SLL_F3 3'b001 
+  `define SRL_SRA_F3 3'b101 
+
+  // r type and i type share the same f3 codes
+
+
 
   `define SB_F3 3'b000
   `define SH_F3 3'b001

@@ -19,23 +19,23 @@ module Hazard_Unit(
 
     
     
-    input [4:0] i_rs1_d, //
-    input [4:0] i_rs2_d, //
-    input [4:0] i_rs1_e, //
-    input [4:0] i_rs2_e, //
+    input [4:0] i_rs1_d, 
+    input [4:0] i_rs2_d, 
+    input [4:0] i_rs1_e, 
+    input [4:0] i_rs2_e, 
 
-    input [4:0] i_rd_e, //
-    input [4:0] i_rd_m, //
-    input [4:0] i_rd_wb, //
-    input i_jmp_e, //
-    input i_res_src_b0_e, //
-    input [1:0] i_pc_src_e, // 01=> branch taken //
+    input [4:0] i_rd_e, 
+    input [4:0] i_rd_m, 
+    input [4:0] i_rd_wb, 
+    input i_jmp_e, 
+    input i_res_src_b0_e, 
+    input [1:0] i_pc_src_e, // 01=> branch taken 
 
 
-    output [1:0] o_fw_a_e, //
-    output [1:0] o_fw_b_e, //
-    output o_fw_a_d, //
-    output o_fw_b_d, //
+    output [1:0] o_fw_a_e, 
+    output [1:0] o_fw_b_e, 
+    output o_fw_a_d, 
+    output o_fw_b_d, 
 
 
 

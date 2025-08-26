@@ -10,6 +10,7 @@ Pipeline DUT(.i_clk(t_r_clk),
              .i_rst(t_r_rst),
              .i_btn_enable_d_s_o(t_r_btn_enable_d_s_o));
 
+`define dmem DUT.Data_Path_Inst.Mem_Data_Inst.r_mem_data
 
 
 initial
@@ -19,11 +20,10 @@ begin
 
     `ifdef DEBUG
 
-        `define dmem DUT.Data_Path_Inst.Mem_Data_Inst.r_mem_data
         `define regs DUT.Data_Path_Inst.Reg_File_Inst.r_registers
 
         `define test_reg 5
-        $monitor("mem[3]=%h; mem[2]=%h; mem[1]=%h; mem[0]=%h;",`dmem[3],`dmem[2],`dmem[1],`dmem[0]);
+
 
         $monitor("regs[%0d][3]=%h, regs[%0d][2]=%h, regs[%0d][1]=%h, regs[%0d][0]=%h",
         `test_reg,`regs[`test_reg][`byte_3],
@@ -33,7 +33,7 @@ begin
         
     `endif
 
-
+    $monitor("mem[3]=%h; mem[2]=%h; mem[1]=%h; mem[0]=%h;",`dmem[3],`dmem[2],`dmem[1],`dmem[0]);
 
     t_r_clk=1'b1;
     t_r_rst=1'b1;
@@ -45,7 +45,7 @@ begin
     #3
     t_r_btn_enable_d_s_o=1'b0;
 
-    #1000
+    #1000000
     $finish;    
 
 end

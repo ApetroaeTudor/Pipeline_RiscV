@@ -97,10 +97,10 @@ todo: -> instructions to add: blt, bge, auipc
 
 
 .c-> .s
-riscv64-unknown-elf-gcc -S -march=rv32i -mabi=ilp32 -O0 -nostdlib -T ./Asm_Code/linker.ld ./Asm_Code/main.c -o ./Asm_Code/main.s
+riscv64-unknown-elf-gcc -S -march=rv32i_zicsr -mabi=ilp32 -O2 -nostdlib -T ./Asm_Code/linker.ld ./Asm_Code/main.c -o ./Asm_Code/main.s
 
 .s-> .o
-riscv64-unknown-elf-as -march=rv32i_zicsr -mabi=ilp32 -o startup.o startup.s
+riscv64-unknown-elf-as -march=rv32i_zicsr -mabi=ilp32 -o ./Asm_Code/startup.o ./Asm_Code/startup.s
 
 .o-> .elf
 riscv64-unknown-elf-gcc -march=rv32i_zicsr -mabi=ilp32 -nostdlib -T linker.ld startup.o -o startup.elf

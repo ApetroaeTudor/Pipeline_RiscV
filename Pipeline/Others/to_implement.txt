@@ -1,0 +1,140 @@
+
+Chip enables/selects: addr decoding-> instr_en, data_rom_en, data_ram_en, io_en
+
+1. csr addr decode unit
+
+2. regular addr decode unit
+
+3. branch prediction unit: ideas
+    -> 1. if the branch is going forward predict its not taken (regular behavior)
+    -> 2. if the branch is going backwards predict its taken ( check the sign of the imm generated, if its 1 then it goes backwards).
+            -> a branch target calculator in ID is needed, replacing the alu function that does this (thus moving the entire branch calculation thing in decode)
+
+    -> the same goes for jumps!!!! in decode, not in ex
+    -> look into: fetch stage cache for branches to predict in IF (read about the BTB!! ->> dynamic branch prediction)
+            -> 1 bit dynamic branch prediction: remembers the last behavior of this branch, taken or not
+            -> 2 bit dynamic branch prediction: 00 - Strongly Taken,               taken -> 00, not_taken->01, predict: take
+                                                01 - Weakly Taken,                 taken -> 00, not_taken->10, predict: take
+                                                10 - Weakly Not Taken,             taken -> 01, not_taken->11, predict: not_take
+                                                11 - Stronly Not Taken,            taken -> 10, not_taken->10, predict: not_take
+
+4. Branch Target Buffer (BTB)
+    -> if IF
+    -> 128 entry, 2 way associative. this means each indexed set will have 2 entries. thus 64 sets.
+    -> IDX = log2(64)=6b
+    -> TAG = 32b - 2 - 6 == 24b
+    -> Total Size: one row = valid_bit + state_bits[1:0] + tag[23:0] + taget[31:0] = 1+2+24+32 = 59 bits
+        -> 59 bits * 128 = 7552bits = 944bytes
+    -> Parameters: X_way associative, Y entries
+    -> Behavior: In if a pc is detected.
+            -> BTB MISS: a random pc is detected. it is searched for in the btb. it is not a known branch, predict as a regular instr -> NOT TAKEN
+            -> BTB COMPULSORY MISS: the random pc is a new branch, not seen before. predict as NOT TAKEN. in execute the fact that it's a branch and its result are clear
+                                    after execute the BTB is updated with the info 
+            -> BTB HIT: the random pc is found in the BTB as a branch. the destination is saved. the state bits are set. a decision is taken based on this
+                        in ex stage the BTB is updated for this entry depending on whether the branch was taken rightly or not  
+
+    -> Replacement policy: LFSR pseudo random number generator module % 2
+
+
+
+5. `xlen constant - physical cpu dimensions.
+    -> * other used values for parametrization: mxlen, IALIGN
+
+6. misa.mxl -> goes into control path, from here signals are emitted that control how the instructions are execute
+    -> for example if xlen is 64b and mxlen is 32b then the 64b special instructions are automatically flagged as invalid, and in the alu only the lower 32b of the input registers are taken and worked with,
+    -> if the extension C bit is set, the IALIGN reg in Control path is changed to 2(from 4 default)
+    
+7. if the opcode 2lsb is 00,01 or 10 then the instrucion is in C mode and the next pc will be incremented by 2, instead of 4.
+
+8. DATA ROM -> has an address space. r--
+            -> 16KiB, uses a chip enable data_rom_en
+
+
+MEMORY LAYOUT: rom = 256 KiB, ram = 32KiB, io = 8KiB
+
+addr_valid = AV = b[31:19]=0
+
+RAM:                                     31   27   23   19    15
+    IO_HI(---)            = 0x0004_9FFF: 0000_0000_0000_0100__1001_1111_1111_1111-> io    = AV & b18 & b[17:13] = 00100 
+    IO_LO 8KiB            = 0x0004_8000: 0000_0000_0000_0100__1000_0000_0000_0000 
+
+    M_STACK_HI(---)       = 0x0004_7FFF: 0000_0000_0000_0100__0111_1111_1111_1111-> m_stk = AV & b18 & b[17:13] = 00011  
+    M_STACK_LO 8KiB       = 0x0004_6000: 0000_0000_0000_0100__0110_0000_0000_0000  
+    
+    STACK_HI(RW-)         = 0x0004_5FFF: 0000_0000_0000_0100__0101_1111_1111_1111-> stk   = AV & b18 & b[17:13] = 00010 
+    STACK_LO 8KiB         = 0x0004_4000: 0000_0000_0000_0100__0100_0000_0000_0000  
+
+    DYNAMIC_HI(RW-)       = 0x0004_3FFF: 0000_0000_0000_0100__0011_1111_1111_1111-> dyn   = AV & b18 & b[17:13] = 00001 
+    DYNAMIC_LO 8KiB       = 0x0004_2000: 0000_0000_0000_0100__0010_0000_0000_0000
+
+    GLB_DATA_HI(RW-)      = 0x0004_1FFF: 0000_0000_0000_0100__0001_1111_1111_1111-> glb   = AV & b18 & b[17:13] = 00000  
+    GLB_DATA_LO 8KiB      = 0x0004_0000: 0000_0000_0000_0100__0000_0000_0000_0000  
+
+ROM:
+    ROM_DATA_HI(R--)      = 0x0003_FFFF: 0000_0000_0000_0011__1111_1111_1111_1111-> ro_d  = AV &!b18 & b[17:13] = 11111
+    ROM_DATA_LO 8KiB      = 0x0003_E000: 0000_0000_0000_0011__1110_0000_0000_0000
+
+    TEXT_HI(R-X)          = 0x0003_DFFF: 0000_0000_0000_0011__1101_1111_1111_1111-> txt   = AV &!b18 &&  ( (b17 | b16) || !(b[17:13]==1111)  )
+    TEXT_LO 184KiB        = 0x0001_0000: 0000_0000_0000_0001__0000_0000_0000_0000
+
+    RESET_HI(---)         = 0x0000_FFFF: 0000_0000_0000_0000__1111_1111_1111_1111-> rst   = AV &!b18 & b[17:15] = 001
+    RESET_LO 32KiB        = 0x0000_8000: 0000_0000_0000_0000__1000_0000_0000_0000  
+
+    TRAP_HI(---)          = 0x0000_7FFF: 0000_0000_0000_0000__0111_1111_1111_1111-> trap  = AV &!b18 & b[17:15] = 000  
+    TRAP_LO 32KiB         = 0x0000_0000: 0000_0000_0000_0000__0000_0000_0000_0000  
+
+
+PmpConfigs and addresses:
+
+pmpcfg0 = TOR, Locked, ---         8'b1_00_01__0_0_0  // trap
+pmpaddr0 = TOR, end = 0x0000_8000  
+
+pmpcfg1 = TOR, Locked, ---         8'b1_00_01__0_0_0  // reset
+pmpaddr1 = TOR, end = 0x0001_0000
+
+pmpcfg2 = TOR, Locked, R-X         8'b1_00_01__1_0_1 // text
+pmpaddr2 = TOR, end = 0x0003_E000
+
+pmpcfg3 = TOR, Locked, R--         8'b1_00_01__0_0_1 // rom data
+pmpaddr3 = TOR, end = 0x0004_0000
+
+
+pmpcfg4 = TOR, Locked, RW-         8'b1_00_01__0_1_1 // glb data
+pmpaddr4 = TOR, end = 0x0004_2000
+
+pmpcfg5 = TOR, Locked, RW-         8'b1_00_01__0_1_1 // dynamic 
+pmpaddr5 = TOR, end = 0x0004_4000
+
+pmpcfg6 = TOR, Locked, RW-         8'b1_00_01__0_1_1 // stack
+pmpaddr6 = TOR, end = 0x0004_6000
+
+pmpcfg7 = TOR, Locked, ---         8'b1_00_01__0_0_0 // mstack
+pmpaddr7 = TOR, end = 0x0004_8000
+
+
+pmpcfg8 = TOR, Locked, ---         8'b1_00_01__0_0_0 // io
+pmpaddr8 = TOR, end = 0x0004_A000
+
+64 bits: 
+pmpcfg0_64 = 64'b10001000_10001011_10001011_10001011__10001001_10001101_10001000_10001000 = 64'h888B_8B8B__898D_8888
+pmpcfg1_64 = 64'b00000000_00000000_00000000_00000000__00000000_00000000_00000000_10001000 = 74'h0000_0000__0000_0088
+
+32 bits:
+pmpcfg0_32 = 32'b10001001_10001101_10001000_10001000 = 32'h898D_8888
+pmpcfg1_32 = 32'b10001000_10001011_10001011_10001011 = 32'h888B_8B8B
+pmpcfg2_32 = 32'b00000000_00000000_00000000_10001000 = 32'h0000_0088
+
+
+pmpaddr0 = 0x0000_02000
+pmpaddr1 = 0x0000_04000
+pmpaddr2 = 0x0000_0f800
+pmpaddr3 = 0x0000_10000
+pmpaddr4 = 0x0000_10800
+pmpaddr5 = 0x0000_11000
+pmpaddr6 = 0x0000_11800
+pmpaddr7 = 0x0000_12000
+pmpaddr8 = 0x0000_12800
+
+ 
+
+

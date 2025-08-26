@@ -37,11 +37,9 @@ SECTIONS
     {
         . = ALIGN(4);
         *(.text .text.*)
-        *(.rodata .rodata.*)
     } > TEXT
 
-    _sidata = LOADADDR(.text_segm) + SIZEOF(.text_segm); 
-
+    _sidata = ORIGIN(GLOBAL_DATA);
 
 
     /* initially flashed data is put into rom, and then in the reset vector copied into ram*/
@@ -50,6 +48,7 @@ SECTIONS
         . = ALIGN(4);
         _sdata = .;
         *(.data .data.*)
+        *(.rodata .rodata.*)
         _edata = .;
     } > GLOBAL_DATA
 

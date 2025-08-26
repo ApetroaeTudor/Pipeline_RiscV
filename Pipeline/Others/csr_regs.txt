@@ -1,0 +1,99 @@
+
+! the xl fields (xlen type) are write any read legal -> warl -> if i try to write an invalid value i dont get an exception but nothing happens!
+! the idea is that the cpu might be physically on 64/128 bits, and i may want to change to lower
+! if the cpu is on 32b, i can't go into 64b mode, so the xlen fields are not useful for anything
+
+misa `xlen bits
+    -> b[`xlen-1:`xlen-2] -> mxl 00=32, 01=64, 10=128 -> base width = 2^(mxl+4) 
+    -> b0-25 -> extensions -> b0=A, b1=B .. b25=Z, !! b8=i, !! b20 = user mode implemented
+    -> the i bit is the complement of the E bit
+    -> at reset, mxl is defined with `XLEN, then on write the permissions used in the control path are updated
+    -> the mxl field represents the MAXIMUM XLEN the processor can work at
+    -> writing E bit causes exception, you can only write i byte 
+
+    -> if i am in 64b mode and i write 00 in the msb of the misa reg, from now on the cpu will only use the lower 32b
+    -> the lower 32b will always have the 2msb = 00. this 00 is intentional by design and means the cpu is operating on 32bits.
+    -> if i write into these 2 bits 01 again the cpu will move into 64b again
+
+mvendorid -> initialized to 0 by default (not implemented)
+
+marchid -> initialized to 0 by default (not implemented)
+
+mimpid -> initialized to 0 by default (not implemented)
+
+mhartid -> 0
+
+mstatus -> wpri = not writable, read-only to a defined value
+    -> abbreviations: SXL         = Supervisor XLEN (rv64),                              for me it is the same as xlen
+                      UXL         = User XLEN (rv64) 
+                      MBE/SBE     = Machine Big Endian/ Supervisor Big Endian            on rv64 in mstatus, on rv32 in mstatush (in rv). 0 is little endian
+                      UBE         = User Big Endian                                      the same but for usermode, in mstatus always bit6
+                      TSR         = Trap sret.                                           if set to 1 and in supervisor mode the sret instr will cause illegal instr trap
+                      TW          = Timeout wait.                                        if set to 1 and if not in machine mode a wait for interrupt instruction will cause an illegal instr trap after some time
+                      TVM         = Trap Virtual Memory.                                 if set to 1 and trying to access virtual memory in supervisor mode -> illegal instr trap
+                      MXR         = Make executable readable.                            for virtual memory systems, can load from executable pages if 1
+                      SUM         = Supervisor user memory acces.                        if 1 supervisor code can access mem pages belonging to user mode
+                      MPRV        = Modify privilege.                                    if 1, machine mode will access memory with the permission in MPP
+                      XS [1:0]    = Extension State                                      custom extension state, 0=Off, 1=Initial, 3=Clean, 4=Dirty
+                      FS [1:0]    = Floating Point Status                                the same but for floating point extension
+                      VS [1:0]    = Vector Status                                        the same but for vector extension
+                      SD          = State Dirty                                          XS or FS or VS
+                      MPP [1:0]   = Machine Previous Privilege                           the privilege before entering trap mode. on mret the cpu returns to this
+                      SPP [1:0]   = Supervisor Previous Privilege                        the same but for supervisor mode
+                      MPIE        = Machine Previous Interrupt Enable                    mie bit before trap mode. on mret the bit is restored from here
+                      SPIE        = Supervisor Previous Interrupt Enable                 the same but for supervisor
+                      MIE         = Machine Interrupt Enable                             allows interrupts in machine mode
+                      SIE         = Supervisor Interrupt Enable                          the same in supervisor mode
+
+mstatush -> 32bits: 31:6 wpri 
+    -> if i do a 64b write to mstatus(64b mode), then mstatush is also written (upper 32b)
+    -> if i do a 32b write to mstatush(32b mode), then mstatus(32b mode) is also written IN THE PHYSICAL AREA THAT IS NOT ACCESIBLE IN 32b MODE
+
+mtvec -> lsb 2 bits: mode: 00 - DIRECT, 01 - VECTORED(pc = base + cause*4)
+         the rest of MXLEN-2 bits: BASE - alligned to 4 (2 lsb = 00)
+
+medeleg/mideleg -> machine trap delegation registers (machine Exception delegation and machine Interrupt delegation)
+                -> on a machine-supervisor-user mode cpu if an exception is marked with 1 in medeleg, it will be treated into S mode
+                -> initialized with 0 here
+
+mip/mie -> machine interrupt pending/enabled
+        -> first 16 bits correspond for interrupt causes
+        -> in order for the cpu to accept an interrupt, the corresponding mip bit should be set, the global mie field in mstatus is 1, and the corresponding mie_reg bit should be set
+
+mscratch -> use by M mode
+
+mepc -> b0 is always 0
+    -> if IALIGN is 32-> bit 1 is masked on read so its always 0
+
+
+mcause -> msb is 0 for exceptions, 1 for interrupts
+       -> the other bits are for holding causes for interrupts and exceptions (look official spec tables) -> WLRL = the data in this field is guaranteed to be legal
+
+mtval -> either 0 or filled with relevant data
+
+menvcfg/menvcfgh -> set to 0 for now
+
+mseccfg -> put the bit of MMWP (Machine Mode Whitelist Policy)
+
+
+
+Physical memory protection:
+    -> pmpcfgx => permissions -> if on 32b then a pmp register has 4 pmpcfgx-es, if on 64b then 8.
+                rv32 -> 16 pmpcfg 32b registers
+                rv64 -> 8 pmpcfg 64b registers
+        one pmpcfgx entry: 8 bits: fields: A[1:0] =  address matching mode: 00 = pmpentry off, 
+                                                                            01 = TOR(top of range), means the addr corresponding is the top addr
+                                                                            10 = NA4 (naturally alligned 4 byte), if the addr in the pmpaddr coresponding is 0x0800_0000,
+                                                                                                                    then the affected region is [0x2000_0000, 0x2000_0003]. (can be used to protect memory mapped registers)
+                                                                            11 = NAPOT (naturally alligned power of two). pmpaddr has both the starting addr and the size. 
+                                                                                decoding addr: size is encoded in trailing 1's.
+                                                                                EXAMPLE: 1MiB(2^20) bytes starting at 0x8000_0000
+                                                                                        pmpaddr = (0x8000_0000 >> 2 | 1<<(20-2) -1 ).
+                                                                                    reading this: k is number of trailing 1's. size=2^(k+2). remove trailing ones
+                                                                                                  starting addr = addr_after_removal << 2.
+                                            L = Lock                      : the pmpcfg and the corresponding pmpaddr are readonly until the next reset
+                                            R,W,X 
+
+
+
+                                   

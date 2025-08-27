@@ -1,6 +1,8 @@
 `default_nettype none
 `include "Constants.vh"
-module Data_Path(
+module Data_Path#(
+    parameter XLEN = 32
+)(
     input i_clk,
     input i_rst,
     input i_clk_en,
@@ -358,7 +360,8 @@ module Data_Path(
     assign o_imm_d = w_instr_d[31:20];
 
 
-    Reg_File Reg_File_Inst(.i_clk(i_clk),
+    Reg_File #(.XLEN(XLEN)) Reg_File_Inst(
+                           .i_clk(i_clk),
                            .i_clk_enable(i_clk_en),
                            .i_rst(i_rst),
                            .i_csr_reg_write(w_csr_reg_write_w),
@@ -370,7 +373,8 @@ module Data_Path(
                            .o_rd_data_1(w_regs_do1_d),
                            .o_rd_data_2(w_regs_do2_d));
 
-    M_CSR_Reg_File M_CSR_Reg_File_Inst(.i_clk(i_clk),
+    M_CSR_Reg_File #(.XLEN(XLEN)) M_CSR_Reg_File_Inst(
+                                       .i_clk(i_clk),
                                        .i_rst(i_rst),
                                        .i_clk_en(i_clk_en),
                                        .i_opcode_d(w_instr_d[6:0]),
@@ -414,7 +418,8 @@ module Data_Path(
                                              .o_ecall_d(w_ecall_d),
                                              .o_mret_d(w_mret_d));
 
-    Imm_32 Imm_32_Inst(.i_imm_ctl(i_imm_src_d),
+    Imm_32 #(.XLEN(XLEN)) Imm_32_Inst(
+                       .i_imm_ctl(i_imm_src_d),
                        .i_sign_ext(i_sign_ext_d),
                        .i_instr_bits(w_instr_d[31:7]),
                        .o_extended_imm(w_imm_32b_d));

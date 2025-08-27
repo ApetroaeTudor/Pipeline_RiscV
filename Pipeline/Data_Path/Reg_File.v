@@ -1,4 +1,6 @@
-module Reg_File(
+module Reg_File#(
+    parameter XLEN = 32
+)(
     input i_clk,
     input i_clk_enable,
     input i_rst,
@@ -9,28 +11,28 @@ module Reg_File(
     input [4:0] i_rd_addr_2,
     input [4:0] i_wr_addr,
 
-    input [31:0] i_wr_data,
+    input [XLEN-1:0] i_wr_data,
     
-    output [31:0] o_rd_data_1,
-    output [31:0] o_rd_data_2,
+    output [XLEN-1:0] o_rd_data_1,
+    output [XLEN-1:0] o_rd_data_2,
 
-    output [31:0] o_x0_debug,
-    output [31:0] o_x1_debug,
-    output [31:0] o_x2_debug,
-    output [31:0] o_x3_debug,
-    output [31:0] o_x4_debug,
-    output [31:0] o_x5_debug,
-    output [31:0] o_x6_debug,
-    output [31:0] o_x7_debug,
-    output [31:0] o_x8_debug,
-    output [31:0] o_x9_debug
+    output [XLEN-1:0] o_x0_debug,
+    output [XLEN-1:0] o_x1_debug,
+    output [XLEN-1:0] o_x2_debug,
+    output [XLEN-1:0] o_x3_debug,
+    output [XLEN-1:0] o_x4_debug,
+    output [XLEN-1:0] o_x5_debug,
+    output [XLEN-1:0] o_x6_debug,
+    output [XLEN-1:0] o_x7_debug,
+    output [XLEN-1:0] o_x8_debug,
+    output [XLEN-1:0] o_x9_debug
 
 );
 
 
 
 
-    reg [31:0] r_registers [31:0];
+    reg [XLEN-1:0] r_registers [31:0];
 
     assign o_x0_debug = r_registers[0];
     assign o_x1_debug = r_registers[1];
@@ -54,7 +56,7 @@ module Reg_File(
         begin
             for(i=0;i<32;i=i+1)
             begin
-                r_registers[i]<=32'b0;
+                r_registers[i]<={ (XLEN){1'b0}};
             end
         end
         else if(i_clk_enable)

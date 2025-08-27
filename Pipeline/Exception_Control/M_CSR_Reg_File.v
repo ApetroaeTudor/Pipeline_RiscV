@@ -1,6 +1,8 @@
 `include "Constants.vh"
 
-module M_CSR_Reg_File( // this should always output mtvec and mepc
+module M_CSR_Reg_File#(
+    parameter XLEN = 64
+)( // this should always output mtvec and mepc
     input i_clk,
     input i_rst,
     input i_clk_en,
@@ -19,7 +21,7 @@ module M_CSR_Reg_File( // this should always output mtvec and mepc
     
 
 
-    input [31:0] i_csr_data,
+    input [XLEN-1:0] i_csr_data,
     output [31:0] o_csr_data,
     output [31:0] o_mepc,
     output [31:0] o_mcause,

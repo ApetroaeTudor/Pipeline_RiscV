@@ -1,4 +1,6 @@
-module Pipeline(
+module Pipeline#(
+    parameter XLEN = 32
+)(
     input i_clk,
     input i_rst,
     input i_btn_enable_d_s_o
@@ -83,7 +85,8 @@ module Pipeline(
 
     wire w_f7_b6;
 
-    Data_Path Data_Path_Inst(.i_clk(i_clk),
+    Data_Path #(.XLEN(XLEN)) Data_Path_Inst
+                            (.i_clk(i_clk),
                              .i_rst(i_rst),
                              .i_clk_en(r_clk_en),
                              

@@ -1,5 +1,9 @@
-  // `define DEBUG
+  `define DEBUG
 
+
+
+  `define XLEN_32b 2'b01
+  `define XLEN_64b 2'b10
 
 // risc-v opcodes implemented
   `define OP_R_TYPE 7'b011_0011
@@ -30,8 +34,8 @@
   `define STACK_LO 32'h0014_0000
   `define STACK_HI 32'h0017_ffff
 
-  `define CSR_STACK_LO 32'h0018_0000
-  `define CSR_STACK_HI 32'h001b_ffff
+  `define M_STACK_LO 32'h0018_0000
+  `define M_STACK_HI 32'h001b_ffff
 
   `define IO_LO 32'h001c_0000
   `define IO_HI 32'h001f_ffff
@@ -137,10 +141,10 @@
   `define CSR_IMM_MRET  12'd770 // rs1 and rd must also be 0;
 
 // csr machine registers
-  `define mstatus_lower 12'h300
+  `define mstatus 12'h300
   `define mie 12'h304
   `define mtvec 12'h305
-  `define mstatus_upper 12'h310
+  `define mstatush 12'h310
   `define mscratch 12'h340
   `define mepc 12'h341
   `define mcause 12'h342

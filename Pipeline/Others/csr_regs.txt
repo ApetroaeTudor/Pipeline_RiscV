@@ -24,8 +24,8 @@ mimpid -> initialized to 0 by default (not implemented)
 mhartid -> 0
 
 mstatus -> wpri = not writable, read-only to a defined value
-    -> abbreviations: SXL         = Supervisor XLEN (rv64),                              for me it is the same as xlen
-                      UXL         = User XLEN (rv64) 
+    -> abbreviations: SXL[1:0]    = Supervisor XLEN (rv64),                              for me it is the same as xlen
+                      UXL[1:0]    = User XLEN (rv64) 
                       MBE/SBE     = Machine Big Endian/ Supervisor Big Endian            on rv64 in mstatus, on rv32 in mstatush (in rv). 0 is little endian
                       UBE         = User Big Endian                                      the same but for usermode, in mstatus always bit6
                       TSR         = Trap sret.                                           if set to 1 and in supervisor mode the sret instr will cause illegal instr trap
@@ -39,7 +39,7 @@ mstatus -> wpri = not writable, read-only to a defined value
                       VS [1:0]    = Vector Status                                        the same but for vector extension
                       SD          = State Dirty                                          XS or FS or VS
                       MPP [1:0]   = Machine Previous Privilege                           the privilege before entering trap mode. on mret the cpu returns to this
-                      SPP [1:0]   = Supervisor Previous Privilege                        the same but for supervisor mode
+                      SPP         = Supervisor Previous Privilege                        the same but for supervisor mode
                       MPIE        = Machine Previous Interrupt Enable                    mie bit before trap mode. on mret the bit is restored from here
                       SPIE        = Supervisor Previous Interrupt Enable                 the same but for supervisor
                       MIE         = Machine Interrupt Enable                             allows interrupts in machine mode
@@ -48,6 +48,9 @@ mstatus -> wpri = not writable, read-only to a defined value
 mstatush -> 32bits: 31:6 wpri 
     -> if i do a 64b write to mstatus(64b mode), then mstatush is also written (upper 32b)
     -> if i do a 32b write to mstatush(32b mode), then mstatus(32b mode) is also written IN THE PHYSICAL AREA THAT IS NOT ACCESIBLE IN 32b MODE
+
+    default mstatus: 
+
 
 mtvec -> lsb 2 bits: mode: 00 - DIRECT, 01 - VECTORED(pc = base + cause*4)
          the rest of MXLEN-2 bits: BASE - alligned to 4 (2 lsb = 00)

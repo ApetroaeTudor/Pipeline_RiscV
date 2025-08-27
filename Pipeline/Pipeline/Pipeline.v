@@ -1,5 +1,5 @@
 module Pipeline#(
-    parameter XLEN = 32
+    parameter [1:0] XLEN = `XLEN_64b
 )(
     input i_clk,
     input i_rst,

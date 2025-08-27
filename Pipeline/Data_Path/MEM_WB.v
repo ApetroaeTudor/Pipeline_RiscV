@@ -1,19 +1,22 @@
-module MEM_WB(
+`include "Constants.vh"
+module MEM_WB#(
+    parameter XLEN = `XLEN_64b
+)(
     input i_clk,
     input i_rst,
     input i_clk_en,
 
-    input [31:0] i_alu_out_m,
-    input [31:0] i_mem_out_m,
+    input [((1<<(XLEN+4))-1):0] i_alu_out_m,
+    input [((1<<(XLEN+4))-1):0] i_mem_out_m,
     input [4:0] i_rd_m,
-    input [31:0] i_pc_p4_m,
+    input [((1<<(XLEN+4))-1):0] i_pc_p4_m,
 
     input i_reg_wr_m,
     input [1:0] i_result_src_m,
 
     input i_csr_reg_write_m,
-    input [31:0] i_new_csr_m,
-    input [31:0] i_old_csr_m,
+    input [((1<<(XLEN+4))-1):0] i_new_csr_m,
+    input [((1<<(XLEN+4))-1):0] i_old_csr_m,
     input [11:0] i_csr_rd_m,
 
 
@@ -21,14 +24,14 @@ module MEM_WB(
     input [2:0] i_f3_m,
     input [11:0] i_imm_12b_m,
 
-    output [31:0] o_alu_out_w,
-    output [31:0] o_mem_out_w,
+    output [((1<<(XLEN+4))-1):0] o_alu_out_w,
+    output [((1<<(XLEN+4))-1):0] o_mem_out_w,
     output [4:0] o_rd_w,
-    output [31:0] o_pc_p4_w,
+    output [((1<<(XLEN+4))-1):0] o_pc_p4_w,
 
     output o_csr_reg_write_w,
-    output [31:0] o_new_csr_w,
-    output [31:0] o_old_csr_w,
+    output [((1<<(XLEN+4))-1):0] o_new_csr_w,
+    output [((1<<(XLEN+4))-1):0] o_old_csr_w,
     output [11:0] o_csr_rd_w,
 
     output [6:0] o_opcode_w,
@@ -54,26 +57,26 @@ module MEM_WB(
     reg r_csr_reg_write_m;
     assign o_csr_reg_write_w = r_csr_reg_write_m;
 
-    reg [31:0] r_new_csr_m;
+    reg [((1<<(XLEN+4))-1):0] r_new_csr_m;
     assign o_new_csr_w = r_new_csr_m;
 
-    reg [31:0] r_old_csr_m;
+    reg [((1<<(XLEN+4))-1):0] r_old_csr_m;
     assign o_old_csr_w = r_old_csr_m;
 
     reg [11:0] r_csr_rd_m;
     assign o_csr_rd_w = r_csr_rd_m;
 
 
-    reg [31:0] r_alu_out_m;
+    reg [((1<<(XLEN+4))-1):0] r_alu_out_m;
     assign o_alu_out_w = r_alu_out_m;
 
-    reg [31:0] r_mem_out_m;
+    reg [((1<<(XLEN+4))-1):0] r_mem_out_m;
     assign o_mem_out_w = r_mem_out_m;
 
     reg [4:0] r_rd_m;
     assign o_rd_w = r_rd_m;
 
-    reg [31:0] r_pc_p4_m;
+    reg [((1<<(XLEN+4))-1):0] r_pc_p4_m;
     assign o_pc_p4_w = r_pc_p4_m;
 
     reg r_reg_wr_m;

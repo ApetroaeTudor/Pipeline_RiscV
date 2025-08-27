@@ -1,14 +1,16 @@
 `include "Constants.vh"
-module ALU_Main(
-    input [31:0] i_op_a,
-    input [31:0] i_op_b,
+module ALU_Main #(
+    parameter XLEN = `XLEN_64b    
+)(
+    input [((1<<(XLEN+4))-1):0] i_op_a,
+    input [((1<<(XLEN+4))-1):0] i_op_b,
 
     input [2:0] i_alu_op,
     input [1:0] i_alu_shift,
 
     output o_zero,
 
-    output [31:0] o_alu_out
+    output [((1<<(XLEN+4))-1):0] o_alu_out
 );
 
 wire [4:0] w_shift_nr;

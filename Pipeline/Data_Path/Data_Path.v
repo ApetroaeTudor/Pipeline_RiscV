@@ -1,7 +1,7 @@
 `default_nettype none
 `include "Constants.vh"
 module Data_Path#(
-    parameter XLEN = 32
+    parameter [1:0] XLEN = `XLEN_64b
 )(
     input i_clk,
     input i_rst,
@@ -81,47 +81,49 @@ module Data_Path#(
 
 );
 
-    wire [31:0] w_pc_in_f;
-    wire [31:0] w_pc_out_f;
-    wire [31:0] w_pc_p4_f;
+    wire [((1<<(XLEN+4))-1):0] w_pc_in_f; //
+    wire [((1<<(XLEN+4))-1):0] w_pc_out_f; //
+    wire [((1<<(XLEN+4))-1):0] w_pc_p4_f; //
     wire [3:0] w_exception_code_f;
     wire w_pc_trap_sel_f;
     reg [3:0] r_exception_code_f;
-    reg [31:0]r_exception_pc_f;
+    reg [((1<<(XLEN+4))-1):0]r_exception_pc_f; // 
+    wire [((1<<(XLEN+4))-1):0] w_instr_f; //
 
 
     wire [31:0] w_instr_d;
-    wire [31:0] w_pc_d;
-    wire [31:0] w_pc_p4_d;
-    wire [31:0] w_imm_32b_d;
-    wire [31:0] w_regs_do1_d;
-    wire [31:0] w_regs_do2_d;
-    wire [31:0] w_haz_do1_d;
-    wire [31:0] w_haz_do2_d;
+    wire [((1<<(XLEN+4))-1):0] w_pc_d; //
+    wire [((1<<(XLEN+4))-1):0] w_pc_p4_d; //
+    wire [((1<<(XLEN+4))-1):0] w_imm_32b_d; // 
+    wire [((1<<(XLEN+4))-1):0] w_regs_do1_d; //
+    wire [((1<<(XLEN+4))-1):0] w_regs_do2_d; // 
+    wire [((1<<(XLEN+4))-1):0] w_haz_do1_d; //
+    wire [((1<<(XLEN+4))-1):0] w_haz_do2_d; //
     wire w_csr_reg_write_d;
-    wire [31:0] w_new_csr_d;
-    wire [31:0] w_old_csr_d;
+    wire [((1<<(XLEN+4))-1):0] w_new_csr_d; //
+    wire [((1<<(XLEN+4))-1):0] w_old_csr_d; // 
     wire w_ecall_d;
     wire w_mret_d;
-    wire [31:0] w_csr_read_data_d;
-    wire [11:0] w_csr_rd_d;
-    reg [3:0] r_exception_code_f_d_ff;
-    reg [31:0]r_exception_pc_f_d_ff;
-    wire [31:0] w_mepc_d;
-    wire [31:0] w_csr_unit_rs1_data_d;
-    wire [31:0] w_csr_unit_csr_data_d;
+    wire [((1<<(XLEN+4))-1):0] w_csr_read_data_d; // 
+    wire [11:0] w_csr_rd_d; 
+    reg [3:0] r_exception_code_f_d_ff; 
+    reg [((1<<(XLEN+4))-1):0]r_exception_pc_f_d_ff; //
+    wire [((1<<(XLEN+4))-1):0] w_mepc_d; //
+    wire [((1<<(XLEN+4))-1):0] w_csr_unit_rs1_data_d; // 
+    wire [((1<<(XLEN+4))-1):0] w_csr_unit_csr_data_d; // 
+    wire [1:0] w_UXL_d;
     
 
     
-    wire [31:0] w_alu_out_e;
-    wire [4:0] w_rs1_e;
+    wire [((1<<(XLEN+4))-1):0] w_alu_out_e; //
+    wire [4:0] w_rs1_e; 
     wire [4:0] w_rs2_e;
     wire [4:0] w_rd_e;
-    wire [31:0] w_pc_p4_e;
-    wire [31:0] w_pc_e;
-    wire [31:0] w_imm_32b_e;
-    wire [31:0] w_regs_do1_e;
-    wire [31:0] w_regs_do2_e;
+    wire [((1<<(XLEN+4))-1):0] w_pc_p4_e; //
+    wire [((1<<(XLEN+4))-1):0] w_pc_e; //
+    wire [((1<<(XLEN+4))-1):0] w_imm_32b_e; // 
+    wire [((1<<(XLEN+4))-1):0] w_regs_do1_e; //
+    wire [((1<<(XLEN+4))-1):0] w_regs_do2_e; //
     wire w_reg_write_e;
     wire [1:0] w_result_src_e;
     wire w_mem_write_e;
@@ -130,29 +132,29 @@ module Data_Path#(
     wire [2:0] w_alu_ctl_e;
     wire w_alu_src_opb_e;
     wire [1:0] w_alu_src_opa_e;
-    wire [31:0] w_haz_rs1_e;
-    wire [31:0] w_haz_rs2_e;
-    wire [31:0] w_alu_op_b_e;
-    wire [31:0] w_alu_op_a_e;
+    wire [((1<<(XLEN+4))-1):0] w_haz_rs1_e; //
+    wire [((1<<(XLEN+4))-1):0] w_haz_rs2_e; //
+    wire [((1<<(XLEN+4))-1):0] w_alu_op_b_e; //
+    wire [((1<<(XLEN+4))-1):0] w_alu_op_a_e; //
     wire w_zero_e;
     wire [6:0] w_opcode_e;
     wire [1:0] w_pc_src_e;
     wire w_pc_trap_sel_e;
     wire [3:0] w_exception_code_e;
-    wire [31:0] w_pc_target_branch_or_jal_e;
+    wire [((1<<(XLEN+4))-1):0] w_pc_target_branch_or_jal_e; //
     wire w_csr_reg_write_e;
-    wire [31:0] w_new_csr_e;
-    wire [31:0] w_old_csr_e;
-    wire [11:0] w_csr_rd_e;
+    wire [((1<<(XLEN+4))-1):0] w_new_csr_e; //
+    wire [((1<<(XLEN+4))-1):0] w_old_csr_e; //
+    wire [11:0] w_csr_rd_e; 
     wire w_ecall_e;
     wire w_mret_e;
-    reg [31:0]r_exception_pc_e;
-    reg [3:0] r_exception_code_e;
-    reg [31:0] r_exception_addr_e;
-    wire [31:0] w_mepc_e;
-    wire [11:0] w_imm_12b_e;
+    reg [((1<<(XLEN+4))-1):0]r_exception_pc_e; //
+    reg [3:0] r_exception_code_e; 
+    reg [((1<<(XLEN+4))-1):0] r_exception_addr_e; //
+    wire [((1<<(XLEN+4))-1):0] w_mepc_e; //
+    wire [11:0] w_imm_12b_e; 
     wire [2:0] w_f3_e;
-    wire [31:0] w_mret_target_pc_e;
+    wire [((1<<(XLEN+4))-1):0] w_mret_target_pc_e; //
     wire w_branch_taken_e;
     reg r_store_byte_e;
     reg r_store_half_e;
@@ -160,25 +162,25 @@ module Data_Path#(
 
 
 
-    wire [31:0] w_alu_out_m;
+    wire [((1<<(XLEN+4))-1):0] w_alu_out_m; //
     wire [4:0] w_rd_m;
-    wire [31:0] w_haz_b_m;
-    wire [31:0] w_pc_p4_m;
+    wire [((1<<(XLEN+4))-1):0] w_haz_b_m; //
+    wire [((1<<(XLEN+4))-1):0] w_pc_p4_m; //
     wire w_reg_wr_m;
     wire [1:0] w_result_src_m;
     wire w_mem_write_m;
-    wire [31:0] w_mem_out_m;
-    wire [31:0] w_effective_addr_m;
+    wire [((1<<(XLEN+4))-1):0] w_mem_out_m; //
+    wire [((1<<(XLEN+4))-1):0] w_effective_addr_m; //
     wire w_dm_en_m;
     wire w_if_id_flush_exception_m;
     wire w_id_ex_flush_exception_m;
     wire w_csr_reg_write_m;
-    wire [31:0] w_new_csr_m;
-    wire [31:0] w_old_csr_m;
-    wire [11:0] w_csr_rd_m;
+    wire [((1<<(XLEN+4))-1):0] w_new_csr_m; //
+    wire [((1<<(XLEN+4))-1):0] w_old_csr_m; //
+    wire [11:0] w_csr_rd_m; 
     reg [3:0] r_exception_code_e_m_ff;
-    reg [31:0]r_exception_pc_e_m_ff;
-    reg [31:0]r_exception_addr_e_m_ff;
+    reg [((1<<(XLEN+4))-1):0]r_exception_pc_e_m_ff; //
+    reg [((1<<(XLEN+4))-1):0]r_exception_addr_e_m_ff; //
     wire [6:0] w_opcode_m;
     wire [2:0] w_f3_m;
     wire [11:0] w_imm_12b_m;
@@ -188,20 +190,20 @@ module Data_Path#(
 
 
     wire [4:0] w_rd_w;    
-    wire [31:0] w_result_w;
+    wire [((1<<(XLEN+4))-1):0] w_result_w; //
     wire w_reg_write_w;
-    wire [31:0] w_alu_out_w;
-    wire [31:0] w_mem_out_w;
-    wire [31:0] w_pc_p4_w;
+    wire [((1<<(XLEN+4))-1):0] w_alu_out_w; //
+    wire [((1<<(XLEN+4))-1):0] w_mem_out_w; //
+    wire [((1<<(XLEN+4))-1):0] w_pc_p4_w; //
     wire [1:0] w_result_src_w;
     wire w_csr_reg_write_w;
-    wire [31:0] w_new_csr_w;
-    wire [31:0] w_old_csr_w;
+    wire [((1<<(XLEN+4))-1):0] w_new_csr_w; //
+    wire [((1<<(XLEN+4))-1):0] w_old_csr_w; //
     wire [11:0] w_csr_rd_w;
     wire [6:0] w_opcode_w;
     wire [2:0] w_f3_w;
     wire [11:0] w_imm_12b_w;
-    reg [31:0] r_mem_to_reg_w;
+    reg [((1<<(XLEN+4))-1):0] r_mem_to_reg_w; //
 
 
 
@@ -301,17 +303,19 @@ module Data_Path#(
     // IF ------------------------------------------------------------
 
 
-    PC PC_Inst(.i_clk(i_clk),
+    PC #(.XLEN(XLEN)) PC_Inst (
+               .i_clk(i_clk),
                .i_clk_en(i_clk_en),
                .i_wr_en(i_pc_wr_en_h),
                .i_exception_f_stall(w_pc_trap_sel_f),
                .i_rst(i_rst),
                .i_di(w_pc_in_f),
-               .o_do(w_pc_out_f));
+               .o_do(w_pc_out_f)
+               );
 
     assign w_pc_trap_sel_f = (w_exception_code_f!=`NO_E)?1'b1:1'b0;
 
-    assign w_pc_p4_f = w_pc_out_f + 32'd4;
+    assign w_pc_p4_f = w_pc_out_f + {{((1<<(XLEN+4)) - 7'd3 ){1'b0}}, 3'b100};
 
    
 
@@ -321,10 +325,9 @@ module Data_Path#(
     (w_pc_trap_sel_f || w_pc_trap_sel_e)?`TRAP_LO:
     (w_pc_src_e == 2'b00)?w_pc_p4_f: // pcp4;
     (w_pc_src_e == 2'b01)?w_pc_target_branch_or_jal_e: // imm // beq && jal
-    (w_pc_src_e == 2'b10)?w_alu_out_e:32'b0; // rs1+imm
+    (w_pc_src_e == 2'b10)?w_alu_out_e:{(1<<(XLEN+4)){1'b0}}; // rs1+imm
 
 
-    wire [31:0] w_instr_f;
     Mem_Instr Mem_Instr_Inst(.i_rst(i_rst),
                              .i_adr(w_pc_out_f),
                              .o_instr(w_instr_f));
@@ -389,7 +392,9 @@ module Data_Path#(
                                        .i_csr_data(w_new_csr_w),
                                        .i_mret_e(w_mret_e),
                                        .o_csr_data(w_csr_read_data_d),
-                                       .o_mepc(w_mepc_d));
+                                       .o_mepc(w_mepc_d),
+                                       .o_UXL(w_UXL_d)
+                                       );
 
 
     assign w_csr_unit_rs1_data_d = (i_fw_normal_into_csr_d == 2'b01)?w_alu_out_e:
@@ -539,7 +544,7 @@ module Data_Path#(
 
 
     assign w_alu_op_a_e = (w_alu_src_opa_e==2'b00)?w_haz_rs1_e:
-                          (w_alu_src_opa_e==2'b01)?w_pc_e:32'b0; // for lui
+                          (w_alu_src_opa_e==2'b01)?w_pc_e:{(1<<(XLEN+4)){1'b0}}; // for lui
     assign w_alu_op_b_e = (w_alu_src_opb_e==1'b0)?w_haz_rs2_e:w_imm_32b_e;
 
 
@@ -574,7 +579,8 @@ module Data_Path#(
   
 
 
-    ALU_Main ALU_Main_Inst(.i_op_a(w_alu_op_a_e),
+    ALU_Main #(.XLEN(XLEN)) ALU_Main_Inst(
+                           .i_op_a(w_alu_op_a_e),
                            .i_op_b(w_alu_op_b_e),
                            .i_alu_op(w_alu_ctl_e),
                            .i_alu_shift(w_alu_shift_e),
@@ -705,16 +711,16 @@ module Data_Path#(
     begin
         casex(w_f3_w)
         `LB_F3:begin
-            r_mem_to_reg_w = { {24{w_mem_out_w[7]}},w_mem_out_w[7:0]  };
+            r_mem_to_reg_w = { {((1<<(XLEN+4))-7'd32){w_mem_out_w[7]}} ,{24{w_mem_out_w[7]}},w_mem_out_w[7:0]  };
         end
         `LH_F3:begin
-            r_mem_to_reg_w = { {16{w_mem_out_w[15]}},w_mem_out_w[15:0]};
+            r_mem_to_reg_w = { {((1<<(XLEN+4))-7'd32){w_mem_out_w[7]}} ,{16{w_mem_out_w[15]}},w_mem_out_w[15:0]};
         end
         `LBU_F3:begin
-            r_mem_to_reg_w = { 24'b0, w_mem_out_w[7:0] };
+            r_mem_to_reg_w = { {((1<<(XLEN+4))-7'd32){w_mem_out_w[7]}} ,24'b0, w_mem_out_w[7:0] };
         end
         `LHU_F3:begin
-            r_mem_to_reg_w = { 16'b0,w_mem_out_w[15:0] };
+            r_mem_to_reg_w = { {((1<<(XLEN+4))-7'd32){w_mem_out_w[7]}} ,16'b0,w_mem_out_w[15:0] };
         end
         default:begin
             r_mem_to_reg_w = w_mem_out_w;
@@ -726,8 +732,8 @@ module Data_Path#(
     (!w_csr_reg_write_w)?
         ((w_result_src_w==2'b00)?w_alu_out_w:
         (w_result_src_w==2'b01)?r_mem_to_reg_w:
-        (w_result_src_w==2'b10)?w_pc_p4_w:32'b0):
-    (w_csr_reg_write_w)?w_old_csr_w:32'b0;
+        (w_result_src_w==2'b10)?w_pc_p4_w:{(1<<(XLEN+4)){1'b0}}):
+    (w_csr_reg_write_w)?w_old_csr_w:{(1<<(XLEN+4)){1'b0}};
 
     assign o_rd_w = w_rd_w;
 

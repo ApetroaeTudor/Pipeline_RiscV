@@ -1,4 +1,7 @@
-module ID_EX(
+`include "Constants.vh"
+module ID_EX#(
+    parameter XLEN = `XLEN_64b
+)(
     input i_clk,
     input i_rst,
     input i_clk_en,
@@ -8,11 +11,11 @@ module ID_EX(
     input [4:0] i_rs1_d,
     input [4:0] i_rs2_d,
     input [4:0] i_rd_d,
-    input [31:0] i_pc_p4_d,
-    input [31:0] i_imm32_d,
-    input [31:0] i_regs_do1_d,
-    input [31:0] i_regs_do2_d,
-    input [31:0] i_pc_d,
+    input [((1<<(XLEN+4))-1):0] i_pc_p4_d,
+    input [((1<<(XLEN+4))-1):0] i_imm32_d,
+    input [((1<<(XLEN+4))-1):0] i_regs_do1_d,
+    input [((1<<(XLEN+4))-1):0] i_regs_do2_d,
+    input [((1<<(XLEN+4))-1):0] i_pc_d,
 
     input i_reg_wr_d,
     input [1:0] i_result_src_d,
@@ -27,8 +30,8 @@ module ID_EX(
 
     input [6:0] i_opcode_d,
     input i_csr_reg_write_d,
-    input [31:0] i_new_csr_d,
-    input [31:0] i_old_csr_d,
+    input [((1<<(XLEN+4))-1):0] i_new_csr_d,
+    input [((1<<(XLEN+4))-1):0] i_old_csr_d,
     input [11:0] i_csr_rd_d,
     input i_ecall_d,
     input i_mret_d,
@@ -36,18 +39,18 @@ module ID_EX(
     input [11:0] i_imm_12b_d,
 
     input i_id_ex_flush_exception_m,
-    input [31:0] i_mepc_d,
+    input [((1<<(XLEN+4))-1):0] i_mepc_d,
 
     
     output [4:0] o_rs1_e,
     output [4:0] o_rs2_e,
     output [4:0] o_rd_e,
-    output [31:0] o_pc_p4_e,
-    output [31:0] o_imm32_e,
-    output [31:0] o_regs_do1_e,
-    output [31:0] o_regs_do2_e,
-    output [31:0] o_pc_e,
-    output [31:0] o_mepc_e,
+    output [((1<<(XLEN+4))-1):0] o_pc_p4_e,
+    output [((1<<(XLEN+4))-1):0] o_imm32_e,
+    output [((1<<(XLEN+4))-1):0] o_regs_do1_e,
+    output [((1<<(XLEN+4))-1):0] o_regs_do2_e,
+    output [((1<<(XLEN+4))-1):0] o_pc_e,
+    output [((1<<(XLEN+4))-1):0] o_mepc_e,
     output [2:0] o_f3_e,
     output [11:0] o_imm_12b_e,
     output [1:0] o_alu_shift_e,
@@ -63,8 +66,8 @@ module ID_EX(
     output [6:0] o_opcode_e,
     
     output o_csr_reg_write_e,
-    output [31:0] o_new_csr_e,
-    output [31:0] o_old_csr_e,
+    output [((1<<(XLEN+4))-1):0] o_new_csr_e,
+    output [((1<<(XLEN+4))-1):0] o_old_csr_e,
     output [11:0] o_csr_rd_e,
     output o_ecall_e,
     output o_mret_e
@@ -80,13 +83,13 @@ module ID_EX(
     reg [11:0] r_imm_12b_e;
     assign o_imm_12b_e = r_imm_12b_e;
 
-    reg [31:0] r_new_csr_e;
+    reg [((1<<(XLEN+4))-1):0] r_new_csr_e;
     assign o_new_csr_e = r_new_csr_e;
 
-    reg [31:0] r_mepc_e;
+    reg [((1<<(XLEN+4))-1):0] r_mepc_e;
     assign o_mepc_e = r_mepc_e;
 
-    reg [31:0] r_old_csr_e;
+    reg [((1<<(XLEN+4))-1):0] r_old_csr_e;
     assign o_old_csr_e = r_old_csr_e;
 
     reg [11:0] r_csr_rd_e;
@@ -102,7 +105,7 @@ module ID_EX(
     reg r_csr_reg_write_e;
     assign o_csr_reg_write_e = r_csr_reg_write_e;
 
-    reg[31:0] r_pc_e;
+    reg[((1<<(XLEN+4))-1):0] r_pc_e;
     assign o_pc_e = r_pc_e;
 
     reg [6:0] r_opcode_e;
@@ -117,16 +120,16 @@ module ID_EX(
     reg [4:0] r_rd_e;
     assign o_rd_e = r_rd_e;
 
-    reg [31:0] r_pc_p4_e;
+    reg [((1<<(XLEN+4))-1):0] r_pc_p4_e;
     assign o_pc_p4_e = r_pc_p4_e;
 
-    reg [31:0] r_imm32_e;
+    reg [((1<<(XLEN+4))-1):0] r_imm32_e;
     assign o_imm32_e = r_imm32_e;
 
-    reg [31:0] r_regs_do1_e;
+    reg [((1<<(XLEN+4))-1):0] r_regs_do1_e;
     assign o_regs_do1_e = r_regs_do1_e;
 
-    reg [31:0] r_regs_do2_e;
+    reg [((1<<(XLEN+4))-1):0] r_regs_do2_e;
     assign o_regs_do2_e = r_regs_do2_e;
 
     reg r_reg_wr_e;

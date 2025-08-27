@@ -9,14 +9,14 @@ MEMORY
   /* data mem (RAM) - Total 1MB */
     GLOBAL_DATA (rwx) : ORIGIN = 0x00100000, LENGTH = 256K
     STACK       (rwx) : ORIGIN = 0x00140000, LENGTH = 256K
-    CSR_STACK   (rwx) : ORIGIN = 0x00180000, LENGTH = 256K
+    M_STACK   (rwx) : ORIGIN = 0x00180000, LENGTH = 256K
     IO          (rwx) : ORIGIN = 0x001c0000, LENGTH = 256K
 }
 
 _txt_start = ORIGIN(TEXT);
 
 _stack_top = ORIGIN(STACK) + LENGTH(STACK);
-_csr_stack_top = ORIGIN(CSR_STACK) + LENGTH(CSR_STACK);
+_M_STACK_top = ORIGIN(M_STACK) + LENGTH(M_STACK);
 
 SECTIONS
 {

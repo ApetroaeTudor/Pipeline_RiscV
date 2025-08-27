@@ -45,7 +45,7 @@ begin
     #3
     t_r_btn_enable_d_s_o=1'b0;
 
-    #1000000
+    #10000
     $finish;    
 
 end

@@ -1,13 +1,15 @@
 `include "Constants.vh"
-module Exception_Signals_Handler(
-    input [31:0] i_pc_f,
+module Exception_Signals_Handler#(
+  parameter XLEN = `XLEN_64b
+)(
+    input [((1<<(XLEN+4))-1):0] i_pc_f,
     input [6:0] i_opcode_f,
     input [11:0] i_ms_12b_f,
 
     input [1:0] i_res_src_e,
     input i_reg_write_e,
     input [4:0] i_rd_e,
-    input [31:0] i_alu_out_e,
+    input [((1<<(XLEN+4))-1):0] i_alu_out_e,
     input i_mem_write_e,
     input i_ecall_e,
     input i_store_byte_e,

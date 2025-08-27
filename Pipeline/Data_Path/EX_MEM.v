@@ -1,13 +1,16 @@
-module EX_MEM(
+`include "Constants.vh"
+module EX_MEM#(
+    parameter XLEN = `XLEN_64b
+)(
     input i_clk,
     input i_rst,
     input i_clk_en,
 
 
     input [4:0] i_rd_e,
-    input [31:0] i_alu_out_e,
-    input [31:0] i_haz_b_e,
-    input [31:0] i_pc_p4_e,
+    input [((1<<(XLEN+4))-1):0] i_alu_out_e,
+    input [((1<<(XLEN+4))-1):0] i_haz_b_e,
+    input [((1<<(XLEN+4))-1):0] i_pc_p4_e,
 
     input i_reg_wr_e,
     input [1:0] i_result_src_e,
@@ -15,8 +18,8 @@ module EX_MEM(
     input [3:0] i_exception_code_e,
 
     input i_csr_reg_write_e,
-    input [31:0] i_new_csr_e,
-    input [31:0] i_old_csr_e,
+    input [((1<<(XLEN+4))-1):0] i_new_csr_e,
+    input [((1<<(XLEN+4))-1):0] i_old_csr_e,
     input [11:0] i_csr_rd_e,
 
     input [6:0] i_opcode_e,
@@ -30,9 +33,9 @@ module EX_MEM(
     output o_id_ex_flush_exception_m,
 
     output [4:0] o_rd_m,
-    output [31:0] o_alu_out_m,
-    output [31:0] o_haz_b_m,
-    output [31:0] o_pc_p4_m,
+    output [((1<<(XLEN+4))-1):0] o_alu_out_m,
+    output [((1<<(XLEN+4))-1):0] o_haz_b_m,
+    output [((1<<(XLEN+4))-1):0] o_pc_p4_m,
     output o_reg_wr_m,
     output [1:0] o_result_src_m,
     output o_mem_write_m,
@@ -45,8 +48,8 @@ module EX_MEM(
     output o_store_half_m,
 
     output o_csr_reg_write_m,
-    output [31:0] o_new_csr_m,
-    output [31:0] o_old_csr_m,
+    output [((1<<(XLEN+4))-1):0] o_new_csr_m,
+    output [((1<<(XLEN+4))-1):0] o_old_csr_m,
     output [11:0] o_csr_rd_m
 );
 
@@ -74,10 +77,10 @@ module EX_MEM(
     reg r_csr_reg_write_e;
     assign o_csr_reg_write_m = r_csr_reg_write_e;
 
-    reg [31:0] r_new_csr_e;
+    reg [((1<<(XLEN+4))-1):0] r_new_csr_e;
     assign o_new_csr_m = r_new_csr_e;
 
-    reg [31:0] r_old_csr_e;
+    reg [((1<<(XLEN+4))-1):0] r_old_csr_e;
     assign o_old_csr_m = r_old_csr_e;
 
     reg [11:0] r_csr_rd_e;
@@ -86,13 +89,13 @@ module EX_MEM(
     reg [4:0] r_rd_e;
     assign o_rd_m = r_rd_e;
 
-    reg [31:0] r_alu_out_e;
+    reg [((1<<(XLEN+4))-1):0] r_alu_out_e;
     assign o_alu_out_m = r_alu_out_e;
 
-    reg [31:0] r_haz_b_e;
+    reg [((1<<(XLEN+4))-1):0] r_haz_b_e;
     assign o_haz_b_m = r_haz_b_e;
 
-    reg [31:0] r_pc_p4_e;
+    reg [((1<<(XLEN+4))-1):0] r_pc_p4_e;
     assign o_pc_p4_m = r_pc_p4_e;
 
     reg r_reg_wr_e;

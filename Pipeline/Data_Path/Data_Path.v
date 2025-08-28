@@ -88,7 +88,7 @@ module Data_Path#(
     wire w_pc_trap_sel_f;
     reg [3:0] r_exception_code_f;
     reg [((1<<(XLEN+4))-1):0]r_exception_pc_f; // 
-    wire [((1<<(XLEN+4))-1):0] w_instr_f; //
+    wire [31:0] w_instr_f; 
 
 
     wire [31:0] w_instr_d;
@@ -280,7 +280,7 @@ module Data_Path#(
 
 
 
-    Exception_Signals_Handler Exception_Signals_Handler_Inst(
+    Exception_Signals_Handler #(.XLEN(XLEN)) Exception_Signals_Handler_Inst(
         .i_reset_permission(r_reset_permission),
         .i_trap_permission(r_trap_permission),
         .i_pc_f(w_pc_out_f),
@@ -328,16 +328,19 @@ module Data_Path#(
     (w_pc_src_e == 2'b10)?w_alu_out_e:{(1<<(XLEN+4)){1'b0}}; // rs1+imm
 
 
-    Mem_Instr Mem_Instr_Inst(.i_rst(i_rst),
+    Mem_Instr #(.XLEN(XLEN)) Mem_Instr_Inst(
+                             .i_rst(i_rst),
                              .i_adr(w_pc_out_f),
-                             .o_instr(w_instr_f));
+                             .o_instr(w_instr_f)
+                             );
 
 
     // ~IF ------------------------------------------------------------
 
     
 
-    IF_ID IF_ID_Inst(.i_clk(i_clk),
+    IF_ID #(.XLEN(XLEN)) IF_ID_Inst(
+                     .i_clk(i_clk),
                      .i_rst(i_rst),
                      .i_clk_en(i_clk_en),
                      .i_if_id_stall(i_if_id_stall_h),
@@ -353,7 +356,8 @@ module Data_Path#(
 
                      .o_instr_d(w_instr_d),
                      .o_pc_p4_d(w_pc_p4_d),
-                     .o_pc_d(w_pc_d));
+                     .o_pc_d(w_pc_d)
+                     );
 
     // ID ------------------------------------------------------------
 
@@ -374,7 +378,8 @@ module Data_Path#(
                            .i_wr_addr(w_rd_w),
                            .i_wr_data(w_result_w),
                            .o_rd_data_1(w_regs_do1_d),
-                           .o_rd_data_2(w_regs_do2_d));
+                           .o_rd_data_2(w_regs_do2_d)
+                           );
 
     M_CSR_Reg_File #(.XLEN(XLEN)) M_CSR_Reg_File_Inst(
                                        .i_clk(i_clk),
@@ -408,7 +413,8 @@ module Data_Path#(
                                    (i_fw_csr_csr_csr_d == 2'b10)?w_new_csr_m:
                                    (i_fw_csr_csr_csr_d == 2'b11)?w_new_csr_w: w_csr_read_data_d;
 
-    CSR_Behavior_Unit CSR_Behavior_Unit_Inst(.i_opcode_d(w_instr_d[6:0]),
+    CSR_Behavior_Unit #(.XLEN(XLEN)) CSR_Behavior_Unit_Inst(
+                                             .i_opcode_d(w_instr_d[6:0]),
                                              .i_f3_d(w_instr_d[14:12]),
                                              .i_rd_d(w_instr_d[11:7]),
                                              .i_rs1_d(w_instr_d[19:15]),
@@ -421,13 +427,15 @@ module Data_Path#(
                                              .o_old_csr_d(w_old_csr_d),
                                              .o_csr_rd_d(w_csr_rd_d),
                                              .o_ecall_d(w_ecall_d),
-                                             .o_mret_d(w_mret_d));
+                                             .o_mret_d(w_mret_d)
+                                             );
 
     Imm_32 #(.XLEN(XLEN)) Imm_32_Inst(
                        .i_imm_ctl(i_imm_src_d),
                        .i_sign_ext(i_sign_ext_d),
                        .i_instr_bits(w_instr_d[31:7]),
-                       .o_extended_imm(w_imm_32b_d));
+                       .o_extended_imm(w_imm_32b_d)
+                       );
 
     assign o_rs1_d = w_instr_d[19:15];
     assign o_rs2_d = w_instr_d[24:20];
@@ -438,7 +446,8 @@ module Data_Path#(
 
     assign w_haz_do1_d = (i_fw_a_d == 1'b0)?w_regs_do1_d:w_result_w;
     assign w_haz_do2_d = (i_fw_b_d == 1'b0)?w_regs_do2_d:w_result_w;
-    ID_EX ID_EX_Inst(.i_clk(i_clk),
+    ID_EX #(.XLEN(XLEN)) ID_EX_Inst (
+                     .i_clk(i_clk),
                      .i_rst(i_rst),
                      .i_clk_en(i_clk_en),
                      .i_id_ex_flush(i_id_ex_flush_h),
@@ -503,7 +512,8 @@ module Data_Path#(
                      .o_alu_ctl_e(w_alu_ctl_e),
                      .o_alu_src_opb_e(w_alu_src_opb_e),
                      .o_alu_src_opa_e(w_alu_src_opa_e),
-                     .o_opcode_e(w_opcode_e));
+                     .o_opcode_e(w_opcode_e)
+                     );
 
     // EX ------------------------------------------------------------
 
@@ -596,7 +606,8 @@ module Data_Path#(
 
     // ~EX ------------------------------------------------------------
 
-    EX_MEM EX_MEM_Inst(.i_clk(i_clk),
+    EX_MEM #(.XLEN(XLEN)) EX_MEM_Inst(
+                       .i_clk(i_clk),
                        .i_rst(i_rst),
                        .i_clk_en(i_clk_en),
                        
@@ -642,16 +653,20 @@ module Data_Path#(
                        .o_csr_reg_write_m(w_csr_reg_write_m),
                        .o_new_csr_m(w_new_csr_m),
                        .o_old_csr_m(w_old_csr_m),
-                       .o_csr_rd_m(w_csr_rd_m));
+                       .o_csr_rd_m(w_csr_rd_m)
+                       );
 
     // MEM ------------------------------------------------------------
 
 
-    Mem_Calculation_Unit Mem_Calculation_Unit_Inst(.i_addr_m(w_alu_out_m),
+    Mem_Calculation_Unit #(.XLEN(XLEN)) Mem_Calculation_Unit_Inst(
+                                                   .i_addr_m(w_alu_out_m),
                                                    .o_effective_addr_m(w_effective_addr_m),
-                                                   .o_dm_en(w_dm_en_m));
+                                                   .o_dm_en(w_dm_en_m)
+                                                   );
 
-    Mem_Data Mem_Data_Inst(.i_clk(i_clk),
+    Mem_Data #(.XLEN(XLEN)) Mem_Data_Inst(
+                           .i_clk(i_clk),
                            .i_clk_enable(i_clk_en),
                            .i_rst(i_rst),
                            .i_mem_write(w_mem_write_m),
@@ -659,7 +674,8 @@ module Data_Path#(
                            .i_mem_data(w_haz_rs2_e),
                            .i_store_byte(w_store_byte_m),
                            .i_store_half(w_store_half_m),
-                           .o_mem_data(w_mem_out_m));
+                           .o_mem_data(w_mem_out_m)
+                           );
 
     assign o_rd_m = w_rd_m;
     assign o_opcode_m = w_opcode_m;
@@ -668,7 +684,8 @@ module Data_Path#(
 
     // ~MEM ------------------------------------------------------------
 
-    MEM_WB MEM_WB_Inst(.i_clk(i_clk),
+    MEM_WB #(.XLEN(XLEN)) MEM_WB_Inst(
+                       .i_clk(i_clk),
                        .i_rst(i_rst),
                        .i_clk_en(i_clk_en),
                        
@@ -702,7 +719,8 @@ module Data_Path#(
                        .o_csr_reg_write_w(w_csr_reg_write_w),
                        .o_new_csr_w(w_new_csr_w),
                        .o_old_csr_w(w_old_csr_w),
-                       .o_csr_rd_w(w_csr_rd_w));
+                       .o_csr_rd_w(w_csr_rd_w)
+                       );
 
     // WB ------------------------------------------------------------
 

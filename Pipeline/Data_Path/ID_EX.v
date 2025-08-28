@@ -1,6 +1,6 @@
 `include "Constants.vh"
 module ID_EX#(
-    parameter XLEN = `XLEN_64b
+    parameter [1:0] XLEN = `XLEN_64b
 )(
     input i_clk,
     input i_rst,

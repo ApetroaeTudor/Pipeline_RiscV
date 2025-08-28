@@ -1,17 +1,19 @@
 `include "Constants.vh"
-module CSR_Behavior_Unit(
+module CSR_Behavior_Unit#(
+    parameter [1:0] XLEN = `XLEN_64b
+)(
     input [6:0] i_opcode_d,
     input [2:0] i_f3_d,
     input [4:0] i_rd_d,
     input [4:0] i_rs1_d, // this is taken from the instruction encoding
 
-    input [31:0] i_csr_d,
+    input [((1<<(XLEN+4))-1):0] i_csr_d,
     input [11:0] i_imm_d,
-    input [31:0] i_rs1_data,
+    input [((1<<(XLEN+4))-1):0] i_rs1_data,
 
     output o_csr_reg_write_d, // writes both in csr and reg file
-    output [31:0] o_new_csr_d, // this will be taken from the imm field of the csr instr
-    output [31:0] o_old_csr_d, // this will be written in the normal rd deduced from the i type instr 
+    output [((1<<(XLEN+4))-1):0] o_new_csr_d, // this will be taken from the imm field of the csr instr
+    output [((1<<(XLEN+4))-1):0] o_old_csr_d, // this will be written in the normal rd deduced from the i type instr 
     output [11:0] o_csr_rd_d, // imm in csr instr is csr addr in csr reg file
     //new csr goes in csr, old csr goes in regfile
 
@@ -27,10 +29,10 @@ module CSR_Behavior_Unit(
 reg r_csr_reg_write_d = 0;
 assign o_csr_reg_write_d = r_csr_reg_write_d;
 
-reg [31:0] r_new_csr_d = 0;
+reg [((1<<(XLEN+4))-1):0] r_new_csr_d = 0;
 assign o_new_csr_d = r_new_csr_d;
 
-reg [31:0] r_old_csr_d = 0;
+reg [((1<<(XLEN+4))-1):0] r_old_csr_d = 0;
 assign o_old_csr_d = r_old_csr_d;
 
 reg [11:0] r_csr_rd_d = 0;

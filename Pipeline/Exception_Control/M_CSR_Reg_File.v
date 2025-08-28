@@ -12,11 +12,11 @@ module M_CSR_Reg_File#(
     input i_csr_write_enable,
 
     input [3:0] i_exception_code_f_d_ff,
-    input [31:0] i_exception_pc_f_d_ff,
+    input [((1<<(XLEN+4))-1):0] i_exception_pc_f_d_ff,
 
     input [3:0] i_exception_code_e_m_ff,
-    input [31:0] i_exception_pc_e_m_ff,
-    input [31:0] i_exception_addr_e_m_ff,
+    input [((1<<(XLEN+4))-1):0] i_exception_pc_e_m_ff,
+    input [((1<<(XLEN+4))-1):0] i_exception_addr_e_m_ff,
     input i_mret_e,
     
 
@@ -76,14 +76,8 @@ module M_CSR_Reg_File#(
 
     always@(*)
     begin
-        casex(XLEN)
-        `XLEN_64b: begin
-            r_UXL = r_csr_regs[`mstatus-12'h300][33:32];
-        end
-        default: begin
-            r_UXL = XLEN;
-        end
-        endcase
+        if(XLEN == `XLEN_64b) r_UXL = r_csr_regs[`mstatus-12'h300][33:32];
+        else r_UXL = XLEN;
     end
 
 
@@ -115,7 +109,7 @@ module M_CSR_Reg_File#(
                                           1'b0, // b17         MPRV machine privilege
                                           2'b00,// b[16:15]    XS extension state
                                           2'b00,// b[14:13]    FS floating point status
-                                          2'b11,// b[12:11]    MPP machine previous privilege - 00 = User, 11 = Machine, 01 = Supervisor (not implemented), 10 = Hypervisor (not implemented)
+                                          2'b00,// b[12:11]    MPP machine previous privilege - 00 = User, 11 = Machine, 01 = Supervisor (not implemented), 10 = Hypervisor (not implemented)
                                           2'b00,// b[10:9]     VS vector status
                                           1'b1, // b8          SPP supervisor previous privilege - 1 =  Machine, 0 = User
                                           1'b1, // b7          MPIE machine previous interrupt enable, restored on mret
@@ -142,7 +136,7 @@ module M_CSR_Reg_File#(
                                           1'b0, // b17         MPRV machine privilege
                                           2'b00,// b[16:15]    XS extension state
                                           2'b00,// b[14:13]    FS floating point status
-                                          2'b11,// b[12:11]    MPP machine previous privilege - 00 = User, 11 = Machine, 01 = Supervisor (not implemented), 10 = Hypervisor (not implemented)
+                                          2'b00,// b[12:11]    MPP machine previous privilege - 00 = User, 11 = Machine, 01 = Supervisor (not implemented), 10 = Hypervisor (not implemented)
                                           2'b00,// b[10:9]     VS vector status
                                           1'b1, // b8          SPP supervisor previous privilege - 1 =  Machine, 0 = User
                                           1'b1, // b7          MPIE machine previous interrupt enable, restored on mret

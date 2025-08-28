@@ -1,11 +1,14 @@
-module Mem_Data(
+`include "Constants.vh"
+module Mem_Data#(
+    parameter [1:0] XLEN = `XLEN_64b
+)(
     input i_clk,
     input i_clk_enable,
     input i_rst,
     input i_mem_write,
-    input [31:0] i_mem_addr,
-    input [31:0] i_mem_data,
-    output [31:0] o_mem_data,
+    input [((1<<(XLEN+4))-1):0] i_mem_addr,
+    input [((1<<(XLEN+4))-1):0] i_mem_data,
+    output [((1<<(XLEN+4))-1):0] o_mem_data,
 
     input i_store_byte,
     input i_store_half
@@ -14,8 +17,11 @@ module Mem_Data(
 
     reg [7:0] r_mem_data [(1<<20)-1:0];
 
-    assign {o_mem_data[`byte_0] , o_mem_data[`byte_1] , o_mem_data[`byte_2] , o_mem_data[`byte_3] } = 
-           {r_mem_data[i_mem_addr] , r_mem_data[i_mem_addr+1] , r_mem_data[i_mem_addr+2] , r_mem_data[i_mem_addr+3]};
+
+    assign o_mem_data = (XLEN==`XLEN_64b)?{ r_mem_data[i_mem_addr+7]  ,  r_mem_data[i_mem_addr+6],  r_mem_data[i_mem_addr+5],  r_mem_data[i_mem_addr+4],
+                                            r_mem_data[i_mem_addr+3],  r_mem_data[i_mem_addr+2],  r_mem_data[i_mem_addr+1],  r_mem_data[i_mem_addr+0]}:
+
+                                          { r_mem_data[i_mem_addr+3]  ,  r_mem_data[i_mem_addr+2],  r_mem_data[i_mem_addr+1],  r_mem_data[i_mem_addr+0]};
 
     
     integer i;

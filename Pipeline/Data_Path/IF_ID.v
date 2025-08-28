@@ -1,6 +1,6 @@
 `include "Constants.vh"
 module IF_ID#(
-    parameter XLEN = `XLEN_64b
+    parameter [1:0] XLEN = `XLEN_64b
 )(
     input i_clk,
     input i_rst,
@@ -12,13 +12,13 @@ module IF_ID#(
     input i_if_id_flush,
     input i_exception_f_stall,
 
-    input [((1<<(XLEN+4))-1):0] i_instr_f,
+    input [31:0] i_instr_f,
     input [((1<<(XLEN+4))-1):0] i_pc_p4_f,
     input [((1<<(XLEN+4))-1):0] i_pc_f,
     input [3:0] i_exception_code_f,
 
     output [((1<<(XLEN+4))-1):0] o_pc_d,
-    output [((1<<(XLEN+4))-1):0] o_instr_d,
+    output [31:0] o_instr_d,
     output [((1<<(XLEN+4))-1):0] o_pc_p4_d
 
 );
@@ -32,7 +32,7 @@ module IF_ID#(
 
     reg [((1<<(XLEN+4))-1):0] r_pc_d;
     assign o_pc_d = r_pc_d;
-    reg [((1<<(XLEN+4))-1):0] r_instr;
+    reg [31:0] r_instr;
     assign o_instr_d = r_instr;
     reg [((1<<(XLEN+4))-1):0] r_pc_p4;
     assign o_pc_p4_d = r_pc_p4;

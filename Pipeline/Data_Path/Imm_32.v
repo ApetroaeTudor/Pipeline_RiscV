@@ -1,7 +1,7 @@
 `include "Constants.vh"
 
 module Imm_32#(
-    parameter XLEN = `XLEN_64b
+    parameter [1:0] XLEN = `XLEN_64b
 )(
     input [2:0] i_imm_ctl,
 

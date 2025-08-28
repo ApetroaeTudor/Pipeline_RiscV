@@ -99,4 +99,6 @@ Physical memory protection:
 
 
 
-                                   
+
+csr regs addresses:
+                          

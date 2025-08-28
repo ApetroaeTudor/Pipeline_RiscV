@@ -1,6 +1,6 @@
 `include "Constants.vh"
 module ALU_Main #(
-    parameter XLEN = `XLEN_64b    
+    parameter [1:0] XLEN = `XLEN_64b    
 )(
     input [((1<<(XLEN+4))-1):0] i_op_a,
     input [((1<<(XLEN+4))-1):0] i_op_b,

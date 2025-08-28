@@ -153,6 +153,10 @@
   `define mie_DEFAULT_VALUE 32'b0000_0000_0000_0000_0000_0000_1000_0010
 
 
+  `define byte_7 63:56
+  `define byte_6 55:48
+  `define byte_5 47:40
+  `define byte_4 39:32
   `define byte_3 31:24
   `define byte_2 23:16
   `define byte_1 15:8

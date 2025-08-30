@@ -1,3 +1,4 @@
+`timescale 1ns / 1ns
 `include "Constants.vh"
 module Pipeline_Tb;
 reg t_r_clk;
@@ -38,10 +39,10 @@ task dump_mem;
         for(i=start_addr;i<end_addr;i=i+4)
         begin
             $fdisplay(fd_mem_dump,"mem[%04h] = %h_%h_%h_%h",i,
-            `dmem[i],
-            `dmem[i+1],
+            `dmem[i+3],
             `dmem[i+2],
-            `dmem[i+3]);
+            `dmem[i+1],
+            `dmem[i]);
         end
     end
 
@@ -137,7 +138,7 @@ begin
     #3
     t_r_btn_enable_d_s_o=1'b0;
 
-    #10000
+    #1000000
     $finish;
     $fclose(fd_reg_dump);  
     $fclose(fd_mem_dump);  

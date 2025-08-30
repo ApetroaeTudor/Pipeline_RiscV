@@ -13,20 +13,20 @@ module ALU_Main #(
     output [((1<<(XLEN+4))-1):0] o_alu_out
 );
 
-wire [4:0] w_shift_nr;
-assign w_shift_nr = i_op_b[4:0];
+wire [$clog2(1<<XLEN+4)-1:0] w_shift_nr;
+assign w_shift_nr = i_op_b[$clog2(1<<XLEN+4)-1:0];
 
 wire w_signed_less_comparison;
 assign w_signed_less_comparison = $signed(i_op_a)<$signed(i_op_b);
 
-wire [31:0] w_sll;
+wire [((1<<(XLEN+4))-1):0] w_sll;
 assign w_sll = i_op_a << w_shift_nr;
-wire [31:0] w_srl;
+wire [((1<<(XLEN+4))-1):0] w_srl;
 assign w_srl = i_op_a >> w_shift_nr;
-wire [31:0] w_sra;
+wire [((1<<(XLEN+4))-1):0] w_sra;
 assign w_sra = $signed(i_op_a) >>> w_shift_nr;
 
-wire [31:0] w_selected_shift;
+wire [((1<<(XLEN+4))-1):0] w_selected_shift;
 assign w_selected_shift = (i_alu_shift==`ALU_SHIFT_SLL)?w_sll:
                           (i_alu_shift==`ALU_SHIFT_SRL)?w_srl:
                           (i_alu_shift==`ALU_SHIFT_SRA)?w_sra:31'd0;

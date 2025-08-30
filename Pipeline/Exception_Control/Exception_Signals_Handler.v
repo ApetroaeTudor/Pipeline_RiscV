@@ -16,9 +16,7 @@ module Exception_Signals_Handler#(
     input i_store_half_e,
     input [2:0] i_f3_e,
 
-    input i_reset_permission,
-    input i_trap_permission,
-
+    input [1:0] i_current_privilege,
  
 
 
@@ -58,21 +56,21 @@ assign o_exception_code_f =
       i_opcode_f!=`OP_NOP                            ||
       (w_txt_en && (i_opcode_f == `OP_I_TYPE_CSR) && i_ms_12b_f!=0  ) || // invalid opcode
       (i_pc_f[20])                                                    || // pc access outside the instruction mem
-      (!i_trap_permission  && w_tv_en)     ||
-      (!i_reset_permission && w_rv_en)  )  ?`E_ILLEGAL_INSTR: 
+      (i_current_privilege!=`MACHINE  && w_tv_en)     ||
+      (i_current_privilege!=`MACHINE  && w_rv_en)  )  ?`E_ILLEGAL_INSTR: 
        // pc access outside the current allowed region
       
       /*(!i_trap_permission && (i_opcode_f == `OP_I_TYPE_CSR) && i_ms_12b_f == 0 )?`E_ECALL:*/`NO_E;
 
   assign o_exception_code_e=
-      (!i_reset_permission &&  !i_trap_permission && // isnt in reset OR trap vector -> first case, i am in text and i access outside the normal stack segm
+      (i_current_privilege!=`MACHINE && // isnt in reset OR trap vector -> first case, i am in text and i access outside the normal stack segm
        i_reg_write_e            && // is a reg wr instr
        (!i_alu_out_e[20] ||        // the value written isnt an addr in stack segm
          i_alu_out_e[19] ||     
         !i_alu_out_e[18])       &&
        i_rd_e == `sp          // the destination is the stack pointer reg
        ) || // second case -> i am in trap and i access outsite the csr stack OR the normal stack
-       (!i_reset_permission && i_trap_permission &&
+       (i_current_privilege == `MACHINE &&
        i_reg_write_e &&
        i_rd_e == `sp &&
        !(w_addr_in_stk) && !(w_addr_in_csr_stk)  )

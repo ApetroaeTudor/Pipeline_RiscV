@@ -206,14 +206,7 @@ module Data_Path#(
     reg [((1<<(XLEN+4))-1):0] r_mem_to_reg_w; //
 
 
-
-    wire w_pc_in_txt;
-    assign w_pc_in_txt = !w_pc_out_f[20] && w_pc_out_f[19] && !w_pc_out_f[18];
-
-
-
-    reg r_reset_permission = 1'b1;
-    reg r_trap_permission = 1'b0;
+    reg [1:0] r_privilege = `MACHINE;
 
     // ccN: PC_out_f (current PC) checked for exceptions
 	// 	- exception_code_f generated using past permissions.
@@ -223,19 +216,13 @@ module Data_Path#(
 
     always @(posedge i_clk or posedge i_rst) 
     begin
-        if (i_rst) begin
-            r_reset_permission <= 1'b1;
-            r_trap_permission  <= 1'b0;
-        end else if (i_clk_en) begin
-            if (r_reset_permission && w_pc_in_txt)
-                r_reset_permission <= 1'b0;
-            else if (i_rst)
-                r_reset_permission <= 1'b1;
+        if (i_rst) r_privilege<= `MACHINE;
+        else if (i_clk_en) begin
+            if (r_privilege && w_mret_e)
+                r_privilege <= `USER;
 
             if ((w_exception_code_e != `NO_E || w_exception_code_f != `NO_E) && !i_rst)
-                r_trap_permission <= 1'b1;
-            else if (w_pc_in_txt)
-                r_trap_permission <= 1'b0;
+                r_privilege <= `MACHINE;
 
             if (w_exception_code_f!=`NO_E)
             begin
@@ -281,8 +268,7 @@ module Data_Path#(
 
 
     Exception_Signals_Handler #(.XLEN(XLEN)) Exception_Signals_Handler_Inst(
-        .i_reset_permission(r_reset_permission),
-        .i_trap_permission(r_trap_permission),
+        .i_current_privilege(r_privilege),
         .i_pc_f(w_pc_out_f),
         .i_opcode_f(w_instr_f[6:0]),
         .i_res_src_e(w_result_src_e),
@@ -671,7 +657,7 @@ module Data_Path#(
                            .i_rst(i_rst),
                            .i_mem_write(w_mem_write_m),
                            .i_mem_addr(w_effective_addr_m),
-                           .i_mem_data(w_haz_rs2_e),
+                           .i_mem_data(w_haz_b_m),
                            .i_store_byte(w_store_byte_m),
                            .i_store_half(w_store_half_m),
                            .o_mem_data(w_mem_out_m)

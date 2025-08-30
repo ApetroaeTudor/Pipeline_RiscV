@@ -1,0 +1,348 @@
+@00000000 // trap vector lo
+34011173  //csrrw sp,mscratch, sp; 
+fec10113  //addi sp,sp,-20; 
+00512023  //sw t0,0(sp); 
+00612223  //sw t1,4(sp); 
+00712423  //sw t2,8(sp); 
+01c12623  //sw t3,12(sp); 
+01d12823  //sw t4,16(sp); 
+341e9ef3  //csrrw t4,mepc,t4; 
+004e8e93  //addi t4,t4,4; 
+341e9ef3  //csrrw t4,mepc,t4; 
+00012283  //lw t0,0(sp); 
+00412303  //lw t1,4(sp); 
+00812383  //lw t2,8(sp); 
+00c12e03  //lw t3,12(sp); 
+01012e83  //lw t4,16(sp); 
+01410113  //addi sp,sp,20; 
+34011173  //csrr sp,mscratch,sp; 
+30200073  //mret; 
+
+
+@00010000 // reset vector lo // 40000 >>2
+
+0017f137 //lui x2, 0x0017f; 
+fff10113 //addi x2, x2,0xfff; 
+001201b7 //lui x3, 0x00120 
+000802b7 //lui x5, 0x00080              ->> m
+341292f3 // csrrw x5,mepc,x5
+30200073 // mret
+
+
+
+
+
+
+
+
+
+
+
+@00020000 // text lo // 80000 >>2 
+
+
+000bfeb7 //lui x29,0x000bf // success // t4                 ->> m
+00100e37 //lui x28,0x00100 // start of datamem //t3         ->> m
+
+
+0f000f13 // addi t5,x0,0xf0
+01ee0023 // sb t5,0(t3)
+00000f13 // addi t5,x0,0
+000e4f03 // lbu t5,0(t3)
+004f1f13 // slli t5,t5,4
+000bf2b7 // lui t0,0x000bf 
+005f6f33 // or t5,t5,t0 // fail
+
+
+
+12345337 //lui t1,0x12345 
+67830313 //addi t1,t1,0x678 
+006e2023 //sw t1,0(t3)
+000e0283 //lb t0,0(t3) 
+07800313 //addi t1, x0, 0x78
+00628463 //beq t0,t1,8
+000f0067 //jalr x0,0(t5) // fail
+
+000e1283 //lh t0,0(t3) 
+00005337 //lui t1,0x5
+67830313 //addi t1,t1,0x678
+00628463 //beq t0,t1,8
+000f0067 //jalr x0,0(t5) // fail
+
+
+000e2283 //lw t0,0(t3)
+12345337 //lui t1,0x12345
+67830313 //addi t1,t1,0x678
+00628463 //beq t0,t1, 8
+000f0067 //jalr x0,0(t5) // fail
+
+
+
+// Test SLLI
+//li    t0, 1
+//slli  t1, t0, 3      
+//li    t2, 8
+//beq t1,t2,8
+//jalr x0,0(t5)
+00100293 
+00329313 
+00800393 
+00730463
+000f0067
+
+// Test SLTI
+//li    t0, 5
+//slti  t1, t0, 10     
+//li    t2, 1
+//beq t1,t2,8
+//jalr x0,0(t5)
+00500293
+00a2a313
+00100393
+00730463
+000f0067
+
+// Test SLTIU
+//li    t0, -1
+//sltiu t1, t0, 1      
+//li    t2, 0
+//beq t1,t2,8
+//jalr x0,0(t5)
+fff00293
+0012b313
+00000393
+00730463
+000f0067
+
+// Test XORI
+//li    t0, 0xF0
+//xori  t1, t0, 0x0F   
+//li    t2, 0xFF
+//beq t1,t2,8
+//jalr x0,0(t5)
+0f000293
+00f2c313
+0ff00393
+00730463
+000f0067
+
+// Test SRLI
+//li    t0, 0x80
+//srli  t1, t0, 7     
+//li    t2, 1
+//beq t1,t2,8
+//jalr x0,0(t5)
+08000293
+0072d313
+00100393
+00730463
+000f0067
+
+// Test SRAI
+//li    t0, -128
+//srai  t1, t0, 7      
+//li    t2, -1
+//beq t1,t2,8
+//jalr x0,0(t5)
+f8000293
+4072d313
+fff00393
+00730463
+000f0067
+
+// Test ORI
+//li    t0, 0x10
+//ori   t1, t0, 0x01  
+//li    t2, 0x11
+//beq t1,t2,8
+//jalr x0,0(t5)
+01000293
+0012e313
+01100393
+00730463
+000f0067
+    
+// Test ANDI
+//li    t0, 0xF3
+//andi  t1, t0, 0xF0   
+//li    t2, 0xF0
+//beq t1,t2,8
+//jalr x0,0(t5)
+0f300293
+0f02f313
+0f000393
+00730463
+000f0067
+
+// Test AUIPC
+//auipc t1, 0          
+//addi  t2, t1, 8
+//auipc t3, 0
+//beq t2,t3,8
+//jalr x0,0(t5)
+00000317
+00830393
+00000e17
+01c38463
+000f0067
+
+
+// Test SLT
+//li    t0, 5
+//li    t1, 10
+//slt   t2, t0, t1     
+//li    t3, 1
+//beq t2,t3,8
+//jalr x0,0(t5)
+00500293
+00a00313
+0062a3b3
+00100e13
+01c38463
+000f0067
+
+// Test SLTU
+//li    t0, -1         
+//li    t1, 1
+//sltu  t2, t0, t1     
+//li    t3, 0
+//beq t2,t3,8
+//jalr x0,0(t5)
+fff00293
+00100313
+0062b3b3
+00000e13
+01c38463
+000f0067
+
+// Test XOR
+//addi t0,x0,0xAA
+//addi t1,x0,0x1FF
+
+//xori t1,t1,0x100
+//xor t1,t0,t1
+//addi t2,t0,0x55
+//beq t1,t2,8
+//jalr x0,0(t5)
+0aa00293
+1ff00313
+10034313
+0062c333
+05528393
+00730463
+000f0067
+
+// Test SRL
+//lui    t0, 0x80000
+//li    t1, 31
+//srl   t2, t0, t1    
+//li    t3, 1
+//beq t2,t3,8
+//jalr x0,0(t5)
+800002b7
+01f29293
+01f00313
+0062d3b3
+00100e13
+01c38463
+000f0067
+
+// Test SRA
+//li    t0, -2147483648   
+//li    t1, 31
+//sra   t2, t0, t1       
+//li    t3, -1
+//beq t2,t3,8
+//jalr x0,0(t5)
+800002b7
+01f00313
+4062d3b3
+fff00e13
+01c38463
+000f0067
+
+// Test AND
+//li    t0, 0xF0
+//li    t1, 0xCC
+//and   t2, t0, t1        
+//li    t3, 0xC0
+//beq t2,t3,8
+//jalr x0,0(t5)
+0f000293
+0cc00313
+0062f3b3
+0c000e13
+01c38463
+000f0067
+
+
+// Test BEQ
+//li    t0, 123
+//li    t1, 123
+//beq   t0, t1, 8
+//jalr x0,0(t5)
+07b00293
+07b00313
+00628463
+000f0067
+
+// Test BNE
+//li    t0, 123
+//li    t1, 456
+//bne   t0, t1, 8
+//jalr x0,0(t5)
+07b00293
+1c800313
+00629463
+000f0067
+
+// Test BLT
+//li    t0, -1
+//li    t1, 0
+//blt   t0, t1, 8
+//jalr x0,0(t5)
+fff00293
+00000313
+0062c463
+000f0067
+
+
+// Test BGE
+//li    t0, 5
+//li    t1, -5
+//bge   t0, t1, 8
+//jalr x0,0(t5)
+00500293
+ffb00313
+0062d463
+000f0067
+
+// Test BLTU
+//li    t0, 1
+//li    t1, -1           
+//bltu  t0, t1, 8
+//jalr x0,0(t5)
+00100293
+fff00313
+0062e463
+000f0067
+
+// Test BGEU
+//li    t0, -1           
+//li    t1, 1
+//bgeu  t0, t1, 8
+//jalr x0,0(t5)
+fff00293
+00100313
+0062f463
+000f0067
+
+    
+000e8067 //jalr x0,0(t4) // success
+
+
+@0002ffc0// 000bff00 // fail
+00100f93 //addi x31,x0,0x1
+
+@0002fc00// 000bf000 // success
+00200f93 //addi x31,x0,0x2

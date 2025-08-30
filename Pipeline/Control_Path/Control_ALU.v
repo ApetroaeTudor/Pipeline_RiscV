@@ -29,7 +29,7 @@ module Control_ALU(
                          (i_f3 == `OR_F3)?`ALU_CTL_OR: // or
                          (i_f3 == `AND_F3)?`ALU_CTL_AND:
                          (i_f3 == `SLL_F3 || i_f3 == `SRL_SRA_F3)?`ALU_CTL_SHIFT:
-                         (i_f3 == `XOR_F3)?`XOR_F3:
+                         (i_f3 == `XOR_F3)?`ALU_CTL_XOR:
                          3'b000 // and
                         ): 
     (i_alu_op == `ALU_OP_COMPARISON)?

@@ -5,6 +5,12 @@
   `define XLEN_32b 2'b01
   `define XLEN_64b 2'b10
 
+
+// privilege levels
+  `define MACHINE 2'b11
+  `define SUPERVISOR 2'b10
+  `define USER 2'b01
+
 // risc-v opcodes implemented
   `define OP_R_TYPE 7'b011_0011
   `define OP_I_TYPE_LOAD 7'b000_0011

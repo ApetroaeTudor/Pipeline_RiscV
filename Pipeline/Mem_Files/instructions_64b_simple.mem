@@ -1,4 +1,4 @@
-@00000000 // trap vector lo
+@0000000000000000 // trap vector lo
 34011173  //csrrw sp,mscratch, sp; 
 fec10113  //addi sp,sp,-20; 
 00512023  //sw t0,0(sp); 
@@ -29,23 +29,28 @@ fff10113 //addi x2, x2,0xfff;
 30200073 // mret
 
 
-@00020000 // text lo // 80000 >>2 
 
-//addi t0,x0,0xAA
-//addi t1,x0,0x1FF
 
-//xori t1,t1,0x100 // 0FF
-//xor t1,t0,t1 // 10101010, 11111111 -> 01010101
-//addi t2,x0,0x55
-//beq t1,t2,8
+
+
+
+
+
+
+
+@0000000000020000 // text lo // 80000 >>2 
+
+
+// Test SRL
+//lui    t0, 0x70000
+//addi t1,x0,30
+//srl   t2, t0, t1    
+//addi t3,x0,1
+//beq t2,t3,8
 //jalr x0,0(t5)
-
-0aa00293
-1ff00313
-
-10034313
-0062c333
-05500393
-00730463
+700002b7
+01e00313
+0062d3b3
+00100e13
+01c38463
 000f0067
-

@@ -33,7 +33,7 @@ module Reg_File#(
 
 
 
-    reg [(1<<(XLEN+4))-1:0] r_registers [31:0];
+    reg [(1<<(XLEN+4))-1:0] r_registers [`REG_CNT-1:0];
 
     assign o_x0_debug = r_registers[0];
     assign o_x1_debug = r_registers[1];

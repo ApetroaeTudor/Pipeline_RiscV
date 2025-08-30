@@ -1,7 +1,8 @@
 `default_nettype none
 `include "Constants.vh"
 module Data_Path#(
-    parameter [1:0] XLEN = `XLEN_64b
+    parameter [1:0] XLEN = `XLEN_64b,
+    parameter [25:0] SUPPORTED_EXTENSIONS = `SUPPORTED_EXTENSIONS
 )(
     input i_clk,
     input i_rst,
@@ -367,7 +368,9 @@ module Data_Path#(
                            .o_rd_data_2(w_regs_do2_d)
                            );
 
-    M_CSR_Reg_File #(.XLEN(XLEN)) M_CSR_Reg_File_Inst(
+    M_CSR_Reg_File #(.XLEN(XLEN),
+                     .SUPPORTED_EXTENSIONS(SUPPORTED_EXTENSIONS)) 
+                                        M_CSR_Reg_File_Inst(
                                        .i_clk(i_clk),
                                        .i_rst(i_rst),
                                        .i_clk_en(i_clk_en),

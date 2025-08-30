@@ -5,6 +5,11 @@
   `define XLEN_32b 2'b01
   `define XLEN_64b 2'b10
 
+  `define REG_CNT 32
+  `define CSR_CNT 104
+
+  `define SUPPORTED_EXTENSIONS 26'b100000000
+
 
 // privilege levels
   `define MACHINE 2'b11
@@ -147,14 +152,49 @@
   `define CSR_IMM_MRET  12'd770 // rs1 and rd must also be 0;
 
 // csr machine registers
-  `define mstatus 12'h300
-  `define mie 12'h304
-  `define mtvec 12'h305
-  `define mstatush 12'h310
-  `define mscratch 12'h340
-  `define mepc 12'h341
-  `define mcause 12'h342
-  `define mtval 12'h343
+  `define REG_MVENDORID_ADDR 12'hF11
+  `define REG_MARCHID_ADDR 12'hF12
+  `define REG_MIMPID_ADDR 12'hF13
+  `define REG_MHARTID_ADDR 12'hF14
+  `define REG_MCONFIGPTR_ADDR 12'hF15
+  `define REG_MSTATUS_ADDR 12'h300
+  `define REG_MISA_ADDR 12'h301
+  `define REG_MEDELEG_ADDR 12'h302
+  `define REG_MIDELEG_ADDR 12'h303
+  `define REG_MIE_ADDR 12'h304
+  `define REG_MTVEC_ADDR 12'h305
+  `define REG_MCOUNTEREN_ADDR 12'h306
+  `define REG_MSTATUSH_ADDR 12'h310
+  `define REG_MSCRATCH_ADDR 12'h340
+  `define REG_MEPC_ADDR 12'h341
+  `define REG_MCAUSE_ADDR 12'h342
+  `define REG_MTVAL_ADDR 12'h343
+  `define REG_MIP_ADDR 12'h344
+  `define REG_MTINST_ADDR 12'h34A
+  `define REG_MTVAL2_ADDR 12'h34B
+  `define REG_MENVCFG_ADDR 12'h30A
+  `define REG_MENVCFGH_ADDR 12'h31A
+  `define REG_MSECCFG_ADDR 12'h747
+  `define REG_MSECCFGH_ADDR 12'h757
+  `define REG_PMPCFG0_ADDR 12'h3A0
+  `define REG_PMPCFG1_ADDR 12'h3A1
+  `define REG_PMPCFG2_ADDR 12'h3A2
+  `define REG_PMPCFG3_ADDR 12'h3A3
+  `define REG_PMPCFG4_ADDR 12'h3A4
+  `define REG_PMPCFG5_ADDR 12'h3A5
+  `define REG_PMPCFG6_ADDR 12'h3A6
+  `define REG_PMPCFG7_ADDR 12'h3A7
+  `define REG_PMPCFG8_ADDR 12'h3A8
+  `define REG_PMPCFG9_ADDR 12'h3A9
+  `define REG_PMPCFG10_ADDR 12'h3AA
+  `define REG_PMPCFG11_ADDR 12'h3AB
+  `define REG_PMPCFG12_ADDR 12'h3AC
+  `define REG_PMPCFG13_ADDR 12'h3AD
+  `define REG_PMPCFG14_ADDR 12'h3AE
+  `define REG_PMPCFG15_ADDR 12'h3AF
+  `define REG_PMPADDR_BASE_ADDR 12'h3B0
+  `define REG_PMPADDR_END_ADDR 12'h3EF
+
 
   `define mie_DEFAULT_VALUE 32'b0000_0000_0000_0000_0000_0000_1000_0010
 

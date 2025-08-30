@@ -1,0 +1,54 @@
+@00000000 // trap vector lo
+34011173  //csrrw sp,mscratch, sp; 
+fec10113  //addi sp,sp,-20; 
+00512023  //sw t0,0(sp); 
+00612223  //sw t1,4(sp); 
+00712423  //sw t2,8(sp); 
+01c12623  //sw t3,12(sp); 
+01d12823  //sw t4,16(sp); 
+341e9ef3  //csrrw t4,mepc,t4; 
+004e8e93  //addi t4,t4,4; 
+341e9ef3  //csrrw t4,mepc,t4; 
+00012283  //lw t0,0(sp); 
+00412303  //lw t1,4(sp); 
+00812383  //lw t2,8(sp); 
+00c12e03  //lw t3,12(sp); 
+01012e83  //lw t4,16(sp); 
+01410113  //addi sp,sp,20; 
+34011173  //csrr sp,mscratch,sp; 
+30200073  //mret; 
+
+
+@00010000 // reset vector lo // 40000 >>2
+
+0017f137 //lui x2, 0x0017f; 
+fff10113 //addi x2, x2,0xfff; 
+001201b7 //lui x3, 0x00120 
+000802b7 //lui x5, 0x00080              ->> m
+341292f3 // csrrw x5,mepc,x5
+30200073 // mret
+
+
+@00020000 // text lo // 80000 >>2 
+
+//addi t0,x0,0xAA
+//addi t1,x0,0x1FF
+
+//xori t1,t1,0x100 // 0FF
+//xor t1,t0,t1 // 10101010, 11111111 -> 01010101
+//mret
+//addi t2,x0,0x55
+//beq t1,t2,8
+
+
+0aa00293
+1ff00313
+
+10034313
+0062c333
+
+30200073
+
+05500393
+00730463
+

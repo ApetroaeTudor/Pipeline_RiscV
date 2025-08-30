@@ -21,6 +21,29 @@ fec10113  //addi sp,sp,-20;
 
 @00010000 // reset vector lo // 40000 >>2
 
+// tests:
+fffff2b7// lui x5,0xfffff
+fff2e293// ori x5,x5,0xfff
+
+30129973// csrrw x18,misa,x5 (??????????)
+30129673// csrrw x12,misa,x5
+
+30029073// csrrw x0,mstatus,x5
+300296f3// csrrw x13,mstatus,x5
+
+31029073// csrrw x0,mstatush,x5
+31029773// csrrw x14,mstatush,x5
+
+3b529073// csrrw x0,pmpaddr5,x5
+3b5297f3// csrrw x15,pmpaddr5,x5
+
+3a029073// csrrw x0,pmpcfg0,x5
+3a029873// csrrw x16,pmpcfg0,x5
+
+30529073// csrrw x0,mtvec,x5
+305298f3// csrrw x17,mtvec,x5
+
+
 0017f137 //lui x2, 0x0017f; 
 fff10113 //addi x2, x2,0xfff; 
 001201b7 //lui x3, 0x00120 
@@ -343,6 +366,8 @@ fff00293
 
 @0002ffc0// 000bff00 // fail
 00100f93 //addi x31,x0,0x1
+00000063 //beq x0,x0,0
 
 @0002fc00// 000bf000 // success
 00200f93 //addi x31,x0,0x2
+00000063 //beq x0,x0,0

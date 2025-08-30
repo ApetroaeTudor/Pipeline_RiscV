@@ -135,6 +135,14 @@ pmpaddr6 = 0x0000_11800
 pmpaddr7 = 0x0000_12000
 pmpaddr8 = 0x0000_12800
 
+
+
+
+
+plan for memory decoding ->
+fetch -> decode
+ex -> mem
+
  
 
 

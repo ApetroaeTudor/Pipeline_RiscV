@@ -1,5 +1,6 @@
 module Pipeline#(
-    parameter [1:0] XLEN = `XLEN_64b
+    parameter [1:0] XLEN = `XLEN_64b,
+    parameter [25:0] SUPPORTED_EXTENSIONS = `SUPPORTED_EXTENSIONS
 )(
     input i_clk,
     input i_rst,
@@ -85,7 +86,9 @@ module Pipeline#(
 
     wire w_f7_b6;
 
-    Data_Path #(.XLEN(XLEN)) Data_Path_Inst
+    Data_Path #(.XLEN(XLEN),
+                .SUPPORTED_EXTENSIONS(SUPPORTED_EXTENSIONS)
+                )           Data_Path_Inst
                             (.i_clk(i_clk),
                              .i_rst(i_rst),
                              .i_clk_en(r_clk_en),

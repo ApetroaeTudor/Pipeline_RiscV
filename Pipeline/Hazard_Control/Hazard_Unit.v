@@ -111,9 +111,9 @@ module Hazard_Unit(
 
 
     assign o_fw_mret_e = ((i_mret_e && i_opcode_m == `OP_I_TYPE_CSR && i_f3_m!=`CSR_CONTROL_F3) &&     
-                         ( i_imm_m == `mepc))?2'b01:
+                         ( i_imm_m == `REG_MEPC_ADDR))?2'b01:
                          ((i_mret_e && i_opcode_w == `OP_I_TYPE_CSR && i_f3_w!=`CSR_CONTROL_F3) &&     
-                         ( i_imm_w == `mepc))?2'b10:2'b00;
+                         ( i_imm_w == `REG_MEPC_ADDR))?2'b10:2'b00;
     // if mret_e and the instruction in mem is CSR, then pc<= new_csr_mem
     // if mret_e and the instruction in wb is CSR, then pc<= new_csr_wb
 

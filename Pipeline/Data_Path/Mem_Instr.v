@@ -35,7 +35,7 @@ module Mem_Instr #(
                 temp_mem[i]=0;
             end
 
-            if(XLEN == `XLEN_32b) $readmemh("./Mem_Files/instr_32b_simple.mem",temp_mem);
+            if(XLEN == `XLEN_32b) $readmemh("./Mem_Files/instructions_32b.mem",temp_mem);
             else $readmemh("./Mem_Files/instructions_64b.mem",temp_mem);
 
             for(i=0; i< (1<<18); i = i+1)

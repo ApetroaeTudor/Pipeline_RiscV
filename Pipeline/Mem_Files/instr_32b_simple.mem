@@ -34,9 +34,9 @@ fff10113 //addi x2, x2,0xfff;
 //addi t0,x0,0xAA
 //addi t1,x0,0x1FF
 
-//xori t1,t1,0x100
-//xor t1,t0,t1
-//addi t2,t0,0x55
+//xori t1,t1,0x100 // 0FF
+//xor t1,t0,t1 // 10101010, 11111111 -> 01010101
+//addi t2,x0,0x55
 //beq t1,t2,8
 //jalr x0,0(t5)
 
@@ -45,7 +45,7 @@ fff10113 //addi x2, x2,0xfff;
 
 10034313
 0062c333
-05528393
+05500393
 00730463
 000f0067
 

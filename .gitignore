@@ -3,3 +3,5 @@ Pipeline/waveform.vcd
 Pipeline/a.out
 Pipeline/Others/encoded_to_instr.py
 Pipeline/Asm_Code/startup.hex
+Pipeline/Others/mem_dumps.txt
+Pipeline/Others/reg_dumps.txt

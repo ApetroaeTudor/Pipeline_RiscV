@@ -29,7 +29,8 @@ always #100 t_r_probe_clk = ~t_r_probe_clk;
 
 `define dmem DUT.Data_Path_Inst.Mem_Data_Inst.r_mem_data
 `define regs DUT.Data_Path_Inst.Reg_File_Inst.r_registers
-`define csr_regs DUT.Data_Path_Inst.M_CSR_Reg_File_Inst
+`define csr_regs DUT.Data_Path_Inst.CSR_Unit_Inst.M_CSR_Reg_File_Inst
+// `define csr_regs DUT.Data_Path_Inst.M_CSR_Reg_File_Inst
 
 // `define test_reg 5
 // `define csr_test_reg_1 `mstatus-12'h300

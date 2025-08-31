@@ -12,7 +12,7 @@ module CSR_Behavior_Unit#(
     input [((1<<(XLEN+4))-1):0] i_rs1_data,
 
     output o_csr_reg_write_d, // writes both in csr and reg file
-    output [((1<<(XLEN+4))-1):0] o_new_csr_d, // this will be taken from the imm field of the csr instr
+    output [((1<<(XLEN+4))-1):0] o_new_csr_d, 
     output [((1<<(XLEN+4))-1):0] o_old_csr_d, // this will be written in the normal rd deduced from the i type instr 
     output [11:0] o_csr_rd_d, // imm in csr instr is csr addr in csr reg file
     //new csr goes in csr, old csr goes in regfile

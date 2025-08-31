@@ -2,7 +2,7 @@
 module Exception_Signals_Handler#(
   parameter [1:0] XLEN = `XLEN_64b
 )(
-    input [((1<<(XLEN+4))-1):0] i_pc_f,
+    input [((1<<(XLEN+4))-1):0] i_pc_f, // probably dont need this
     input [6:0] i_opcode_f,
     input [11:0] i_ms_12b_f,
 

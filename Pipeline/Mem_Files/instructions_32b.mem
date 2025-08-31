@@ -27,19 +27,14 @@ fff2e293// ori x5,x5,0xfff
 
 30129973// csrrw x18,misa,x5 (??????????)
 30129673// csrrw x12,misa,x5
-
 30029073// csrrw x0,mstatus,x5
 300296f3// csrrw x13,mstatus,x5
-
 31029073// csrrw x0,mstatush,x5
 31029773// csrrw x14,mstatush,x5
-
 3b529073// csrrw x0,pmpaddr5,x5
 3b5297f3// csrrw x15,pmpaddr5,x5
-
 3a029073// csrrw x0,pmpcfg0,x5
 3a029873// csrrw x16,pmpcfg0,x5
-
 30529073// csrrw x0,mtvec,x5
 305298f3// csrrw x17,mtvec,x5
 

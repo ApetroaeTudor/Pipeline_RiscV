@@ -1,14 +1,12 @@
 `include "Constants.vh"
 
 module M_CSR_Reg_File#(
-    parameter [1:0] XLEN = `XLEN_64b,
-    parameter [25:0] SUPPORTED_EXTENSIONS = `SUPPORTED_EXTENSIONS
+    parameter [1:0] XLEN = `XLEN_64b
 )( // this should always output mtvec and mepc
     input i_clk,
     input i_rst,
     input i_clk_en,
-    input [6:0] i_opcode_d,
-    input [11:0] i_csr_write_addr,  // something very bad here, have to fix
+    input [11:0] i_csr_write_addr,  
     input [11:0] i_csr_read_addr,
     input i_csr_write_enable,
 
@@ -91,14 +89,9 @@ module M_CSR_Reg_File#(
     assign o_mepc = r_mepc;
 
 
-    reg [1:0] r_UXL;
-    assign o_UXL = r_UXL;
-
 
     always@(*)
     begin
-        if(i_opcode_d == `OP_I_TYPE_CSR)
-        begin
 
             casex(i_csr_read_addr)
             `REG_MVENDORID_ADDR:   r_o_csr_data = $unsigned(r_mvendorid); //d
@@ -107,52 +100,24 @@ module M_CSR_Reg_File#(
             `REG_MHARTID_ADDR:     r_o_csr_data = r_mhartid; //d
             `REG_MCONFIGPTR_ADDR:  r_o_csr_data = r_mconfigptr; //d
             `REG_MSTATUS_ADDR:     r_o_csr_data = r_mstatus; //d
-            `REG_MISA_ADDR: //d
-            begin
-                r_o_csr_data[(1<<(XLEN+4))-1:(1<<(XLEN+4))-2] = (r_misa[(1<<(XLEN+4))-1:(1<<(XLEN+4))-2]==2'b01)?2'b01: // 32b
-                                                                (r_misa[(1<<(XLEN+4))-1:(1<<(XLEN+4))-2]==2'b10)?2'b10: //64b
-                                                                2'b01; // defaults to 32b // warl
-                r_o_csr_data[(1<<(XLEN+4))-3:26] = 0;
-                r_o_csr_data[25:0] = r_misa[25:0] & SUPPORTED_EXTENSIONS;
-                $display("%h",r_o_csr_data);
-            end        
+            `REG_MISA_ADDR:        r_o_csr_data = r_misa;
             `REG_MEDELEG_ADDR:     r_o_csr_data = r_medeleg; //d - for s mode
             `REG_MIDELEG_ADDR:     r_o_csr_data = r_mideleg; //d - for s mode
             `REG_MIE_ADDR:         r_o_csr_data = r_mie; //d - for interrupts (to be implemented later)
-            `REG_MTVEC_ADDR: //d
-            begin
-                r_o_csr_data[(1<<(XLEN+4))-1:2] = i_csr_data & { {((1<<(XLEN+4))-2){1'b1}},2'b0 };
-                r_o_csr_data[1:0] = (r_mtvec[1:0]==00)?2'b00:
-                                    (r_mtvec[1:0]==01)?2'b01:2'b00; // defaults to base
-            end       
+            `REG_MTVEC_ADDR:       r_o_csr_data = r_mtvec;//d
             `REG_MCOUNTEREN_ADDR:  r_o_csr_data = r_mcounteren; //d - to be implemented later
-            `REG_MSTATUSH_ADDR: //d
-            begin
-                if(XLEN == `XLEN_32b) r_o_csr_data = r_mstatush;
-                else r_o_csr_data = 0;
-            end    
+            `REG_MSTATUSH_ADDR:    r_o_csr_data = r_mstatush;//d
             `REG_MSCRATCH_ADDR:    r_o_csr_data = r_mscratch; //d
             `REG_MEPC_ADDR:        r_o_csr_data = r_mepc; //d
-            `REG_MCAUSE_ADDR: //d
-            begin
-                r_o_csr_data[(1<<(XLEN+4))-2:0] = legalize_exception_code(r_mcause[(1<<(XLEN+4))-2:0]);
-            end      
+            `REG_MCAUSE_ADDR:      r_o_csr_data = r_mcause;//d
             `REG_MTVAL_ADDR:       r_o_csr_data = r_mtval; //d
             `REG_MIP_ADDR:         r_o_csr_data = r_mip; //d - for interrupts (to be implemented later)
             `REG_MTINST_ADDR:      r_o_csr_data = r_mtinst; //d
             `REG_MTVAL2_ADDR:      r_o_csr_data = r_mtval2; //d
             `REG_MENVCFG_ADDR:     r_o_csr_data = r_menvcfg; //d (not implemented yet)
-            `REG_MENVCFGH_ADDR: //
-            begin   
-                if(XLEN == `XLEN_32b) r_o_csr_data = r_menvcfgh;
-                else r_o_csr_data = 0;
-            end
+            `REG_MENVCFGH_ADDR:    r_o_csr_data = r_menvcfg;//
             `REG_MSECCFG_ADDR:     r_o_csr_data = r_mseccfg; // d - (not implemented)
-            `REG_MSECCFGH_ADDR: //d
-            begin
-                if(XLEN == `XLEN_32b) r_o_csr_data = r_mseccfgh;
-                else r_o_csr_data = 0;
-            end    
+            `REG_MSECCFGH_ADDR:    r_o_csr_data = r_mseccfg;//d
             `REG_PMPCFG0_ADDR:     r_o_csr_data = r_pmpcfg0;
             `REG_PMPCFG1_ADDR:     r_o_csr_data = r_pmpcfg1;
             `REG_PMPCFG2_ADDR:     r_o_csr_data = r_pmpcfg2;
@@ -178,16 +143,9 @@ module M_CSR_Reg_File#(
             end
             endcase
 
-        end
-        else r_o_csr_data = 0;
-
     end
 
-    always@(*)
-    begin
-        if(XLEN == `XLEN_64b) r_UXL = r_mstatus[33:32];
-        else r_UXL = XLEN;
-    end
+    assign o_UXL = (XLEN == `XLEN_64b)?r_mstatus[33:32]:XLEN;
 
 
     always@(posedge i_clk)
@@ -258,78 +216,45 @@ module M_CSR_Reg_File#(
                     `REG_MIMPID_ADDR:      r_mimpid              <= r_mimpid;
                     `REG_MHARTID_ADDR:     r_mhartid             <= r_mhartid;
                     `REG_MCONFIGPTR_ADDR:  r_mconfigptr          <= r_mconfigptr;
-                    `REG_MSTATUS_ADDR:     
-                    begin  
-                        if(XLEN == `XLEN_64b) r_mstatus <= {
-                                                           i_csr_data[63],
-                                                           r_mstatus[62:43],
-                                                           i_csr_data[42:32],
-                                                           r_mstatus[31:25],
-                                                           i_csr_data[24:1],
-                                                           r_mstatus[0]
-                                                           }; // wpri
-                        else r_mstatus <= {
-                                           i_csr_data[31],
-                                           r_mstatus[30:25],
-                                           i_csr_data[25:1],
-                                           r_mstatus[0]
-                                         }; //wpri
-                    end
-                    `REG_MISA_ADDR:        begin r_misa          <= i_csr_data;    end
-                    `REG_MEDELEG_ADDR:     begin r_medeleg       <= i_csr_data;    end
-                    `REG_MIDELEG_ADDR:     begin r_mideleg       <= i_csr_data;    end
-                    `REG_MIE_ADDR:         begin r_mie           <= i_csr_data;    end
-                    `REG_MTVEC_ADDR:       begin r_mtvec         <= i_csr_data;    end
-                    `REG_MCOUNTEREN_ADDR:  begin r_mcounteren    <= i_csr_data;    end
-                    `REG_MSTATUSH_ADDR:    
-                    begin 
-                       if(XLEN == `XLEN_64b) r_mstatush <= r_mstatush;
-                       else r_mstatush <= {
-                                           r_mstatush[31:11],
-                                           i_csr_data[10:4],
-                                           r_mstatush[3:0] 
-                                          }; //wpri
-                    end
-                    `REG_MSCRATCH_ADDR:    begin r_mscratch      <= i_csr_data;    end
-                    `REG_MEPC_ADDR:        begin r_mepc          <= i_csr_data;    end
-                    `REG_MCAUSE_ADDR:      begin r_mcause        <= i_csr_data;    end
-                    `REG_MTVAL_ADDR:       begin r_mtval         <= i_csr_data;    end
-                    `REG_MIP_ADDR:         begin r_mip           <= i_csr_data;    end
-                    `REG_MTINST_ADDR:      begin r_mtinst        <= i_csr_data;    end
-                    `REG_MTVAL2_ADDR:      begin r_mtval2        <= i_csr_data;    end
-                    `REG_MENVCFG_ADDR:     begin r_menvcfg       <= i_csr_data;    end
-                    `REG_MENVCFGH_ADDR:
-                    begin 
-                        if(XLEN == `XLEN_64b) r_menvcfgh <= r_menvcfgh;
-                       else r_menvcfgh <= i_csr_data;
-                    end
-                    `REG_MSECCFG_ADDR:     begin r_mseccfg       <= i_csr_data;    end
-                    `REG_MSECCFGH_ADDR:
-                    begin
-                       if(XLEN == `XLEN_64b) r_mstatush <= r_mseccfgh;
-                       else r_mseccfgh <= i_csr_data;
-                    end
-                    `REG_PMPCFG0_ADDR:     begin r_pmpcfg0       <= i_csr_data;    end
-                    `REG_PMPCFG1_ADDR:     begin r_pmpcfg1       <= i_csr_data;    end
-                    `REG_PMPCFG2_ADDR:     begin r_pmpcfg2       <= i_csr_data;    end
-                    `REG_PMPCFG3_ADDR:     begin r_pmpcfg3       <= i_csr_data;    end
-                    `REG_PMPCFG4_ADDR:     begin r_pmpcfg4       <= i_csr_data;    end
-                    `REG_PMPCFG5_ADDR:     begin r_pmpcfg5       <= i_csr_data;    end
-                    `REG_PMPCFG6_ADDR:     begin r_pmpcfg6       <= i_csr_data;    end
-                    `REG_PMPCFG7_ADDR:     begin r_pmpcfg7       <= i_csr_data;    end
-                    `REG_PMPCFG8_ADDR:     begin r_pmpcfg8       <= i_csr_data;    end
-                    `REG_PMPCFG9_ADDR:     begin r_pmpcfg9       <= i_csr_data;    end
-                    `REG_PMPCFG10_ADDR:    begin r_pmpcfg10      <= i_csr_data;    end
-                    `REG_PMPCFG11_ADDR:    begin r_pmpcfg11      <= i_csr_data;    end
-                    `REG_PMPCFG12_ADDR:    begin r_pmpcfg12      <= i_csr_data;    end
-                    `REG_PMPCFG13_ADDR:    begin r_pmpcfg13      <= i_csr_data;    end
-                    `REG_PMPCFG14_ADDR:    begin r_pmpcfg14      <= i_csr_data;    end
-                    `REG_PMPCFG15_ADDR:    begin r_pmpcfg15      <= i_csr_data;    end
+                    `REG_MSTATUS_ADDR:     r_mstatus             <= i_csr_data;
+                    `REG_MISA_ADDR:        r_misa                <= i_csr_data;
+                    `REG_MEDELEG_ADDR:     r_medeleg             <= i_csr_data;
+                    `REG_MIDELEG_ADDR:     r_mideleg             <= i_csr_data;
+                    `REG_MIE_ADDR:         r_mie                 <= i_csr_data;
+                    `REG_MTVEC_ADDR:       r_mtvec               <= i_csr_data;
+                    `REG_MCOUNTEREN_ADDR:  r_mcounteren          <= i_csr_data;
+                    `REG_MSTATUSH_ADDR:    r_mstatush            <= i_csr_data;
+                    `REG_MSCRATCH_ADDR:    r_mscratch            <= i_csr_data;
+                    `REG_MEPC_ADDR:        r_mepc                <= i_csr_data;
+                    `REG_MCAUSE_ADDR:      r_mcause              <= i_csr_data;
+                    `REG_MTVAL_ADDR:       r_mtval               <= i_csr_data;
+                    `REG_MIP_ADDR:         r_mip                 <= i_csr_data;
+                    `REG_MTINST_ADDR:      r_mtinst              <= i_csr_data;
+                    `REG_MTVAL2_ADDR:      r_mtval2              <= i_csr_data;
+                    `REG_MENVCFG_ADDR:     r_menvcfg             <= i_csr_data;
+                    `REG_MENVCFGH_ADDR:    r_menvcfgh            <= i_csr_data;
+                    `REG_MSECCFG_ADDR:     r_mseccfg             <= i_csr_data;
+                    `REG_MSECCFGH_ADDR:    r_mseccfgh            <= i_csr_data;
+                    `REG_PMPCFG0_ADDR:     r_pmpcfg0             <= i_csr_data;
+                    `REG_PMPCFG1_ADDR:     r_pmpcfg1             <= i_csr_data;
+                    `REG_PMPCFG2_ADDR:     r_pmpcfg2             <= i_csr_data;
+                    `REG_PMPCFG3_ADDR:     r_pmpcfg3             <= i_csr_data;
+                    `REG_PMPCFG4_ADDR:     r_pmpcfg4             <= i_csr_data;
+                    `REG_PMPCFG5_ADDR:     r_pmpcfg5             <= i_csr_data;
+                    `REG_PMPCFG6_ADDR:     r_pmpcfg6             <= i_csr_data;
+                    `REG_PMPCFG7_ADDR:     r_pmpcfg7             <= i_csr_data;
+                    `REG_PMPCFG8_ADDR:     r_pmpcfg8             <= i_csr_data;
+                    `REG_PMPCFG9_ADDR:     r_pmpcfg9             <= i_csr_data;
+                    `REG_PMPCFG10_ADDR:    r_pmpcfg10            <= i_csr_data;
+                    `REG_PMPCFG11_ADDR:    r_pmpcfg11            <= i_csr_data;
+                    `REG_PMPCFG12_ADDR:    r_pmpcfg12            <= i_csr_data;
+                    `REG_PMPCFG13_ADDR:    r_pmpcfg13            <= i_csr_data;
+                    `REG_PMPCFG14_ADDR:    r_pmpcfg14            <= i_csr_data;
+                    `REG_PMPCFG15_ADDR:    r_pmpcfg15            <= i_csr_data;
                     default: begin
                     if(i_csr_write_addr >= `REG_PMPADDR_BASE_ADDR && i_csr_write_addr <=`REG_PMPADDR_END_ADDR)
                     begin
-                        r_pmpaddr[i_csr_write_addr - `REG_PMPADDR_BASE_ADDR][(1<<(XLEN+4))-1:2] <= (i_csr_data[(1<<(XLEN+4))-1:2]);
-                        r_pmpaddr[i_csr_write_addr - `REG_PMPADDR_BASE_ADDR][1:0] <= r_pmpaddr[i_csr_write_addr - `REG_PMPADDR_BASE_ADDR][1:0];
+                        r_pmpaddr[i_csr_write_addr - `REG_PMPADDR_BASE_ADDR]<=i_csr_data;
                     end
                 end
                 endcase
@@ -479,23 +404,6 @@ module M_CSR_Reg_File#(
     //         end
     //     end
     // end
-
-    function [(1<<(XLEN+4))-2:0] legalize_exception_code;
-    input [(1<<(XLEN+4))-2:0] value;
-    begin
-        casex(value)
-        {{((1<<(XLEN+4))-6){1'b0}},`E_FETCH_ADDR_MISALIGNED },
-        {{((1<<(XLEN+4))-6){1'b0}},`E_ILLEGAL_INSTR },
-        {{((1<<(XLEN+4))-6){1'b0}},`E_SP_OUT_OF_RANGE },
-        {{((1<<(XLEN+4))-6){1'b0}},`E_LOAD_ADDR_MISALIGNED },
-        {{((1<<(XLEN+4))-6){1'b0}},`E_LOAD_ACCESS_FAULT },
-        {{((1<<(XLEN+4))-6){1'b0}},`E_STORE_ADDR_FAULT },
-        {{((1<<(XLEN+4))-6){1'b0}},`E_STORE_ADDR_MISALIGNED },
-        {{((1<<(XLEN+4))-6){1'b0}},`E_ECALL }: legalize_exception_code = value;
-        default: legalize_exception_code = 0;
-        endcase
-    end
-    endfunction
     
 
 endmodule

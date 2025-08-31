@@ -113,6 +113,8 @@ module Data_Path#(
     wire [((1<<(XLEN+4))-1):0] w_csr_unit_rs1_data_d; // 
     wire [((1<<(XLEN+4))-1):0] w_csr_unit_csr_data_d; // 
     wire [1:0] w_UXL_d;
+    wire [((1<<(XLEN+4))-1):0] w_masked_new_csr_d;
+    wire [((1<<(XLEN+4))-1):0] w_masked_old_csr_d;
     
 
     
@@ -368,27 +370,86 @@ module Data_Path#(
                            .o_rd_data_2(w_regs_do2_d)
                            );
 
-    M_CSR_Reg_File #(.XLEN(XLEN),
-                     .SUPPORTED_EXTENSIONS(SUPPORTED_EXTENSIONS)) 
-                                        M_CSR_Reg_File_Inst(
-                                       .i_clk(i_clk),
-                                       .i_rst(i_rst),
-                                       .i_clk_en(i_clk_en),
-                                       .i_opcode_d(w_instr_d[6:0]),
-                                       .i_csr_write_addr(w_csr_rd_w),
-                                       .i_csr_read_addr(w_instr_d[31:20]),
-                                       .i_csr_write_enable(w_csr_reg_write_w),
-                                       .i_exception_code_f_d_ff(r_exception_code_f_d_ff),
-                                       .i_exception_pc_f_d_ff(r_exception_pc_f_d_ff),
-                                       .i_exception_code_e_m_ff(r_exception_code_e_m_ff),
-                                       .i_exception_pc_e_m_ff(r_exception_pc_e_m_ff),
-                                       .i_exception_addr_e_m_ff(r_exception_addr_e_m_ff),
-                                       .i_csr_data(w_new_csr_w),
-                                       .i_mret_e(w_mret_e),
-                                       .o_csr_data(w_csr_read_data_d),
-                                       .o_mepc(w_mepc_d),
-                                       .o_UXL(w_UXL_d)
-                                       );
+    CSR_Unit #(.XLEN(XLEN),
+               .SUPPORTED_EXTENSIONS(SUPPORTED_EXTENSIONS))
+                CSR_Unit_Inst(
+                    .i_clk(i_clk),
+                    .i_rst(i_rst),
+                    .i_clk_en(i_clk_en),
+                    .i_csr_write_addr_w(w_csr_rd_w),
+                    .i_csr_write_enable_w(w_csr_reg_write_w),
+
+                    .i_exception_code_f_d_ff(r_exception_code_f_d_ff),
+                    .i_exception_pc_f_d_ff(r_exception_pc_f_d_ff),
+                    .i_exception_code_e_m_ff(r_exception_code_e_m_ff),
+                    .i_exception_pc_e_m_ff(r_exception_pc_e_m_ff),
+                    .i_exception_addr_e_m_ff(r_exception_addr_e_m_ff),
+
+                    .i_mret_e(w_mret_e),
+                    .i_csr_data_w(w_new_csr_w),
+                    .i_instr_d(w_instr_d),
+                    .i_rs1_data(w_csr_unit_rs1_data_d),
+
+                    .o_csr_reg_write_d(w_csr_reg_write_d),
+                    .o_new_csr_masked_d(w_masked_new_csr_d),
+                    .o_old_csr_masked_d(w_masked_old_csr_d),
+                    .o_csr_rd_d(w_csr_rd_d),
+                    .o_ecall_d(w_ecall_d),
+                    .o_mret_d(w_mret_d),
+                    .o_mepc(w_mepc_d),
+                    .o_UXL(w_UXL_d)  
+                );
+
+    // M_CSR_Reg_File #(.XLEN(XLEN),
+    //                  .SUPPORTED_EXTENSIONS(SUPPORTED_EXTENSIONS)) 
+    //                                     M_CSR_Reg_File_Inst(
+    //                                    .i_clk(i_clk),
+    //                                    .i_rst(i_rst),
+    //                                    .i_clk_en(i_clk_en),
+    //                                    .i_csr_write_addr(w_csr_rd_w),
+    //                                    .i_csr_read_addr(w_instr_d[31:20]), 
+    //                                    .i_csr_write_enable(w_csr_reg_write_w),
+    //                                    .i_exception_code_f_d_ff(r_exception_code_f_d_ff),
+    //                                    .i_exception_pc_f_d_ff(r_exception_pc_f_d_ff),
+    //                                    .i_exception_code_e_m_ff(r_exception_code_e_m_ff),
+    //                                    .i_exception_pc_e_m_ff(r_exception_pc_e_m_ff),
+    //                                    .i_exception_addr_e_m_ff(r_exception_addr_e_m_ff),
+    //                                    .i_csr_data(w_new_csr_w),
+    //                                    .i_mret_e(w_mret_e),
+    //                                    .o_csr_data(w_csr_read_data_d),
+    //                                    .o_mepc(w_mepc_d),
+    //                                    .o_UXL(w_UXL_d)
+    //                                    );
+
+                            
+    // CSR_Behavior_Unit #(.XLEN(XLEN)) CSR_Behavior_Unit_Inst(
+    //                                          .i_opcode_d(w_instr_d[6:0]),
+    //                                          .i_f3_d(w_instr_d[14:12]),
+    //                                          .i_rd_d(w_instr_d[11:7]),
+    //                                          .i_rs1_d(w_instr_d[19:15]),
+    //                                          .i_rs1_data(w_csr_unit_rs1_data_d),
+    //                                          .i_csr_d(w_csr_unit_csr_data_d),
+    //                                          .i_imm_d(w_instr_d[31:20]),
+
+    //                                          .o_csr_reg_write_d(w_csr_reg_write_d), 
+    //                                          .o_new_csr_d(w_new_csr_d),
+    //                                          .o_old_csr_d(w_old_csr_d),
+    //                                          .o_csr_rd_d(w_csr_rd_d),
+    //                                          .o_ecall_d(w_ecall_d),
+    //                                          .o_mret_d(w_mret_d)
+    //                                          );
+
+    // CSR_Data_Masking_Unit #(.XLEN(XLEN),
+    //                         .SUPPORTED_EXTENSIONS(SUPPORTED_EXTENSIONS))
+    //                         CSR_Data_Masking_Unit_Inst(
+    //                             .i_new_csr(w_new_csr_d),
+    //                             .i_old_csr(w_old_csr_d),
+    //                             .i_csr_addr(w_instr_d[31:20]),
+    //                             .i_opcode_d(w_instr_d[6:0]),
+    //                             .o_masked_new_csr_write(w_masked_new_csr_d),
+    //                             .o_masked_old_csr_read(w_masked_old_csr_d)
+    //                         );
+
 
 
     assign w_csr_unit_rs1_data_d = (i_fw_normal_into_csr_d == 2'b01)?w_alu_out_e:
@@ -402,22 +463,7 @@ module Data_Path#(
                                    (i_fw_csr_csr_csr_d == 2'b10)?w_new_csr_m:
                                    (i_fw_csr_csr_csr_d == 2'b11)?w_new_csr_w: w_csr_read_data_d;
 
-    CSR_Behavior_Unit #(.XLEN(XLEN)) CSR_Behavior_Unit_Inst(
-                                             .i_opcode_d(w_instr_d[6:0]),
-                                             .i_f3_d(w_instr_d[14:12]),
-                                             .i_rd_d(w_instr_d[11:7]),
-                                             .i_rs1_d(w_instr_d[19:15]),
-                                             .i_rs1_data(w_csr_unit_rs1_data_d),
-                                             .i_csr_d(w_csr_unit_csr_data_d),
-                                             .i_imm_d(w_instr_d[31:20]),
-
-                                             .o_csr_reg_write_d(w_csr_reg_write_d), 
-                                             .o_new_csr_d(w_new_csr_d),
-                                             .o_old_csr_d(w_old_csr_d),
-                                             .o_csr_rd_d(w_csr_rd_d),
-                                             .o_ecall_d(w_ecall_d),
-                                             .o_mret_d(w_mret_d)
-                                             );
+  
 
     Imm_32 #(.XLEN(XLEN)) Imm_32_Inst(
                        .i_imm_ctl(i_imm_src_d),
@@ -450,8 +496,10 @@ module Data_Path#(
                      .i_regs_do2_d(w_haz_do2_d),
 
                      .i_csr_reg_write_d(w_csr_reg_write_d),
-                     .i_new_csr_d(w_new_csr_d),
-                     .i_old_csr_d(w_old_csr_d),
+
+                     .i_new_csr_d(w_masked_new_csr_d),
+                     .i_old_csr_d(w_masked_old_csr_d),
+
                      .i_csr_rd_d(w_csr_rd_d),
                      .i_ecall_d(w_ecall_d),
                      .i_mret_d(w_mret_d),

@@ -8,7 +8,7 @@
   `define REG_CNT 32
   `define CSR_CNT 104
 
-  `define SUPPORTED_EXTENSIONS 26'b100000000
+  `define SUPPORTED_EXTENSIONS 26'b1000_0000
 
 
 // privilege levels

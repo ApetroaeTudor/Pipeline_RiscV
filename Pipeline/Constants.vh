@@ -33,35 +33,31 @@
 // mapped mem addresses 
 // instr mem
   `define TRAP_LO 32'h0000_0000
-  `define TRAP_HI 32'h0003_ffff
-  `define RESET_LO 32'h0004_0000
-  `define RESET_HI 32'h0007_fff
-  `define TEXT_LO 32'h0008_0000
-  `define TEXT_HI 32'h000b_ffff
+  `define TRAP_HI 32'h0000_7FFF
+
+  `define RESET_LO 32'h0000_8000
+  `define RESET_HI 32'h0000_FFFF
+
+  `define TEXT_LO 32'h0001_0000
+  `define TEXT_HI 32'h0003_DFFF
+
+  `define ROM_DATA_LO 32'h0003_E000
+  `define ROM_DATA_HI 32'h0003_FFFF
 // data mem
-  `define GLOBAL_LO 32'h0010_0000
-  `define GLOBAL_HI 32'h0013_ffff
+  `define GLOBAL_LO 32'h0004_0000
+  `define GLOBAL_HI 32'h0004_1FFF
 
-  `define STACK_LO 32'h0014_0000
-  `define STACK_HI 32'h0017_ffff
+  `define DYNAMIC_LO 32'h0004_2000
+  `define DYNAMIC_HI 32'h0004_3FFF
 
-  `define M_STACK_LO 32'h0018_0000
-  `define M_STACK_HI 32'h001b_ffff
+  `define STACK_LO 32'h0004_4000
+  `define STACK_HI 32'h0004_5fff
 
-  `define IO_LO 32'h001c_0000
-  `define IO_HI 32'h001f_ffff
+  `define M_STACK_LO 32'h0004_4000
+  `define M_STACK_HI 32'h0004_7FFF
 
-  `define TV_EN !addr_f[20] && !addr_f[19] && !addr_f[18]
-  `define RV_EN !addr_f[20] && !addr_f[19] && addr_f[18]
-  `define TXT_EN !addr_f[20] && addr_f[19] && !addr_f[18]
-
-  `define GLB_EN addr_m[20] && !addr_m[19] && !addr_m[18]
-  `define STK_EN addr_m[20] && !addr_m[19] && addr_m[18]
-  `define CSR_STK_EN addr_m[20] && addr_m[19] && !addr_m[18]
-  `define IO_EN addr_m[20] && addr_m[19] && addr_m[18]
-
-
-  
+  `define IO_LO 32'h0004_8000
+  `define IO_HI 32'h0004_9FFF
 
 // alu control
   `define ALU_OP_ADD 3'b000
@@ -99,7 +95,6 @@
   `define E_FETCH_ADDR_MISALIGNED 4'b0000
   `define E_ILLEGAL_INSTR 4'b0010 // detected in fetch
 
-  `define E_SP_OUT_OF_RANGE 4'b0011
   `define E_LOAD_ADDR_MISALIGNED 4'b0100
   `define E_LOAD_ACCESS_FAULT 4'b0101
   `define E_STORE_ADDR_MISALIGNED 4'b0110
@@ -198,6 +193,62 @@
 
   `define mie_DEFAULT_VALUE 32'b0000_0000_0000_0000_0000_0000_1000_0010
 
+  `define byte_63 511:504
+  `define byte_62 503:496
+  `define byte_61 495:488
+  `define byte_60 487:480
+  `define byte_59 479:472
+  `define byte_58 471:464
+  `define byte_57 463:456
+  `define byte_56 455:448
+  `define byte_55 447:440
+  `define byte_54 439:432
+  `define byte_53 431:424
+  `define byte_52 423:416
+  `define byte_51 415:408
+  `define byte_50 407:400
+  `define byte_49 399:392
+  `define byte_48 391:384
+  `define byte_47 383:376
+  `define byte_46 375:368
+  `define byte_45 367:360
+  `define byte_44 359:352
+  `define byte_43 351:344
+  `define byte_42 343:336
+  `define byte_41 335:328
+  `define byte_40 327:320
+  `define byte_39 319:312
+  `define byte_38 311:304
+  `define byte_37 303:296
+  `define byte_36 295:288
+  `define byte_35 287:280
+  `define byte_34 279:272
+  `define byte_33 271:264
+  `define byte_32 263:256
+  `define byte_31 255:248
+  `define byte_30 247:240
+  `define byte_29 239:232
+  `define byte_28 231:224
+  `define byte_27 223:216
+  `define byte_26 215:208
+  `define byte_25 207:200
+  `define byte_24 199:192
+  `define byte_23 191:184
+  `define byte_22 183:176
+  `define byte_21 175:168
+  `define byte_20 167:160
+  `define byte_19 159:152
+  `define byte_18 151:144
+  `define byte_17 143:136
+  `define byte_16 135:128
+  `define byte_15 127:120
+  `define byte_14 119:112
+  `define byte_13 111:104
+  `define byte_12 103:96
+  `define byte_11 95:88
+  `define byte_10 87:80
+  `define byte_9 79:72
+  `define byte_8 71:64
   `define byte_7 63:56
   `define byte_6 55:48
   `define byte_5 47:40
@@ -205,7 +256,8 @@
   `define byte_3 31:24
   `define byte_2 23:16
   `define byte_1 15:8
-  `define byte_0 7:0 
+  `define byte_0 7:0
+
 
 // registers
   `define zero 5'b000_00 //x0

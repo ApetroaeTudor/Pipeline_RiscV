@@ -194,7 +194,6 @@ module CSR_Data_Masking_Unit#(
         casex(value)
         {{((1<<(XLEN+4))-6){1'b0}},`E_FETCH_ADDR_MISALIGNED },
         {{((1<<(XLEN+4))-6){1'b0}},`E_ILLEGAL_INSTR },
-        {{((1<<(XLEN+4))-6){1'b0}},`E_SP_OUT_OF_RANGE },
         {{((1<<(XLEN+4))-6){1'b0}},`E_LOAD_ADDR_MISALIGNED },
         {{((1<<(XLEN+4))-6){1'b0}},`E_LOAD_ACCESS_FAULT },
         {{((1<<(XLEN+4))-6){1'b0}},`E_STORE_ADDR_FAULT },

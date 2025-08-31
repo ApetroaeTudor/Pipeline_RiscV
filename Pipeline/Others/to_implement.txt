@@ -127,27 +127,14 @@ pmpcfg2_32 = 32'b00000000_00000000_00000000_10001000 = 32'h0000_0088
 
 
 pmpaddr0 = 0x0000_2000
-lui x5,0x00002;
 pmpaddr1 = 0x0000_4000
-lui x5,0x00004;
 pmpaddr2 = 0x0000_f800
-lui x5,0x000f8;
-srli x5,x5,4;
 pmpaddr3 = 0x0001_0000
-lui x5,0x00010;
 pmpaddr4 = 0x0001_0800
-lui x5,0x00108;
-srli x5,x5,4;
 pmpaddr5 = 0x0001_1000
-lui x5,0x00011;
 pmpaddr6 = 0x0001_1800
-lui x5,0x00118;
-srli x5,x5,4;
 pmpaddr7 = 0x0001_2000
-lui x5,x5,0x00012;
 pmpaddr8 = 0x0001_2800
-lui x5,x5,0x00128;
-srli x5,x5,x4;
 
 
 

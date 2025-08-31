@@ -7,15 +7,17 @@ reg t_r_rst;
 reg t_r_btn_enable_d_s_o;
 localparam XLEN = `XLEN_32b;
 localparam SUPPORTED_EXTENSIONS = `SUPPORTED_EXTENSIONS;
+localparam ENABLED_PMP_REGISTERS = 12;
 
 reg t_r_assert_reg_final = 1'b1;
-assert assert_reg_final_value(
+assert_module assert_reg_final_value(
                         .clk(t_r_clk),
                         .test(t_r_assert_reg_final)
                         );
 
 Pipeline #(.XLEN(XLEN),
-          .SUPPORTED_EXTENSIONS(SUPPORTED_EXTENSIONS)) 
+          .SUPPORTED_EXTENSIONS(SUPPORTED_EXTENSIONS),
+          .ENABLED_PMP_REGISTERS(ENABLED_PMP_REGISTERS)) 
               DUT(
              .i_clk(t_r_clk),
              .i_rst(t_r_rst),

@@ -1,16 +1,18 @@
 `include "Constants.vh"
 module Exception_Signals_Handler#(
-  parameter [1:0] XLEN = `XLEN_64b
+  parameter [1:0] XLEN = `XLEN_64b,
+  parameter ENABLED_PMP_REGISTERS = 12
 )(
-    input [((1<<(XLEN+4))-1):0] i_pc_f, // probably dont need this
-    input [6:0] i_opcode_f,
-    input [11:0] i_ms_12b_f,
+    input [((1<<(XLEN+4))-1):0] i_pc_f,  //
+    input [6:0] i_opcode_f, //
+    input [3:0] i_imm_ms_4b_f, //
 
-    input [1:0] i_res_src_e,
-    input i_reg_write_e,
-    input [4:0] i_rd_e,
+
+    input [1:0] i_res_src_e, //01 = load
+
     input [((1<<(XLEN+4))-1):0] i_alu_out_e,
     input i_mem_write_e,
+
     input i_ecall_e,
     input i_store_byte_e,
     input i_store_half_e,
@@ -19,75 +21,33 @@ module Exception_Signals_Handler#(
     input [1:0] i_current_privilege,
  
 
-
-
     output [3:0] o_exception_code_f, 
     output [3:0] o_exception_code_e
 );
 
-wire w_pc_f_b20;
-assign w_pc_f_b20 = i_pc_f[20];
+wire w_illegal_csr_instr = (i_opcode_f==`OP_I_TYPE_CSR && i_imm_ms_4b_f>{2'b00,i_current_privilege});
 
-wire w_pc_f_b19;
-assign w_pc_f_b19 = i_pc_f[19];
+wire w_illegal_opcode = ( i_opcode_f!=`OP_R_TYPE                         &&
+                          i_opcode_f!=`OP_I_TYPE_LOAD                    &&
+                          i_opcode_f!=`OP_I_TYPE_OPERATION               &&
+                          i_opcode_f!=`OP_I_TYPE_JALR                    &&
+                          i_opcode_f!=`OP_I_TYPE_CSR                     &&
+                          i_opcode_f!=`OP_S_TYPE                         &&
+                          i_opcode_f!=`OP_J_TYPE                         &&
+                          i_opcode_f!=`OP_B_TYPE                         &&
+                          i_opcode_f!=`OP_U_TYPE_LUI                     &&
+                          i_opcode_f!=`OP_U_TYPE_AUIPC                   &&
+                          i_opcode_f!=`OP_NOP);
 
-wire w_pc_f_b18;
-assign w_pc_f_b18 = i_pc_f[18];
+wire w_fetch_misaligned = (i_pc_f[1:0]!=2'b00); // this will be changed with c extension in the future
 
-wire w_tv_en = !i_pc_f[20] && !i_pc_f[19] && !i_pc_f[18];
-wire w_rv_en = !i_pc_f[20] && !i_pc_f[19] && i_pc_f[18];
-wire w_txt_en = !i_pc_f[20] && i_pc_f[19] && !i_pc_f[18];
+wire w_load_addr_misaligned_4b = (i_res_src_e==2'b01) &&
+                                 (i_alu_out_e[1:0]!=2'b00) &&
+                                 (i_f3_e!=`LB_F3 && i_f3_e!= `LH_F3 && i_f3_e!=`LBU_F3 && i_f3_e!=`LHU_F3);
 
-wire w_addr_in_stk = i_alu_out_e[20] && !i_alu_out_e[19] && i_alu_out_e[18];
-wire w_addr_in_csr_stk = i_alu_out_e[20] && i_alu_out_e[19] && !i_alu_out_e[18];
-
-wire w_illegal_csr_instr = (i_opcode_f==`OP_I_TYPE_CSR && i_ms_12b_f[9:8]>i_current_privilege);
-
-assign o_exception_code_f = 
-    ( i_pc_f[1:0] !=2'b00 )?`E_FETCH_ADDR_MISALIGNED:
-    ( i_opcode_f!=`OP_R_TYPE                         &&
-      i_opcode_f!=`OP_I_TYPE_LOAD                    &&
-      i_opcode_f!=`OP_I_TYPE_OPERATION               &&
-      i_opcode_f!=`OP_I_TYPE_JALR                    &&
-      i_opcode_f!=`OP_I_TYPE_CSR                     &&
-      i_opcode_f!=`OP_S_TYPE                         &&
-      i_opcode_f!=`OP_J_TYPE                         &&
-      i_opcode_f!=`OP_B_TYPE                         &&
-      i_opcode_f!=`OP_U_TYPE_LUI                     &&
-      i_opcode_f!=`OP_U_TYPE_AUIPC                   &&
-      i_opcode_f!=`OP_NOP                            ||
-      (w_illegal_csr_instr  )) ?`E_ILLEGAL_INSTR:`NO_E; 
-       // pc access outside the current allowed region
-      
-
-  assign o_exception_code_e=
-      (i_current_privilege!=`MACHINE && // isnt in reset OR trap vector -> first case, i am in text and i access outside the normal stack segm
-       i_reg_write_e            && // is a reg wr instr
-       (!i_alu_out_e[20] ||        // the value written isnt an addr in stack segm
-         i_alu_out_e[19] ||     
-        !i_alu_out_e[18])       &&
-       i_rd_e == `sp          // the destination is the stack pointer reg
-       ) || // second case -> i am in trap and i access outsite the csr stack OR the normal stack
-       (i_current_privilege == `MACHINE &&
-       i_reg_write_e &&
-       i_rd_e == `sp &&
-       !(w_addr_in_stk) && !(w_addr_in_csr_stk)  )
-       ?`E_SP_OUT_OF_RANGE:
-    ( i_res_src_e == 2'b01 &&
-      ((i_alu_out_e[1:0]!=2'b00 && i_f3_e!=`LB_F3 && i_f3_e!=`LH_F3 && i_f3_e!=`LBU_F3 && i_f3_e!=`LHU_F3) ||
-      ((i_alu_out_e[0]!=1'b0 && i_f3_e!=`LB_F3 && i_f3_e!=`LBU_F3 && (i_f3_e==`LH_F3  || i_f3_e==`LHU_F3)))))?`E_LOAD_ADDR_MISALIGNED:
-
-    ( i_res_src_e == 2'b01 &&
-      (!i_alu_out_e[20] ) )?`E_LOAD_ACCESS_FAULT:
+wire w_load_addr_misaligned_2b = (i_res_src_e==2'b01) &&
+                                 (i_alu_out_e[0]!=0) &&
+                                 (i_f3_e == `LH_F3 || i_f3_e == `LHU_F3);
 
 
-    ( i_mem_write_e &&
-     ((i_alu_out_e[1:0]!=2'b00 && !i_store_byte_e && !i_store_half_e) ||
-      (i_alu_out_e[0]!=1'b0 && !i_store_byte_e && i_store_half_e)      ))?`E_STORE_ADDR_MISALIGNED:
-
-    ( i_mem_write_e &&
-      (!i_alu_out_e[20]) )?`E_STORE_ADDR_FAULT:
-      
-    (i_ecall_e)?`E_ECALL:`NO_E; 
-    
 endmodule

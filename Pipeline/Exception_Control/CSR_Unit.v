@@ -1,6 +1,7 @@
 module CSR_Unit#(
     parameter [1:0] XLEN = `XLEN_64b,
-    parameter [25:0] SUPPORTED_EXTENSIONS = `SUPPORTED_EXTENSIONS
+    parameter [25:0] SUPPORTED_EXTENSIONS = `SUPPORTED_EXTENSIONS,
+    parameter ENABLED_PMP_REGISTERS = 12
 )(
     input i_clk,
     input i_rst,
@@ -32,6 +33,9 @@ module CSR_Unit#(
     output o_mret_d,
     output [(1<<(XLEN+4))-1:0] o_mepc,
 
+    output [(ENABLED_PMP_REGISTERS*(1<<(XLEN+4)))-1:0] o_concat_pmpaddr,
+    output [511:0] o_concat_pmpcfg,
+
     output [1:0] o_UXL
 );
 
@@ -46,7 +50,10 @@ module CSR_Unit#(
     wire [((1<<(XLEN+4))-1):0] w_old_csr;
     wire [((1<<(XLEN+4))-1):0] w_new_csr;
 
-    CSR_Behavior_Unit #(.XLEN(XLEN))
+
+    CSR_Behavior_Unit #(
+                        .XLEN(XLEN)
+                        )
                                     CSR_Behavior_Unit_Inst(
                                         .i_opcode_d(w_opcode_d),
                                         .i_f3_d(w_f3_d),
@@ -63,8 +70,10 @@ module CSR_Unit#(
                                         .o_mret_d(o_mret_d)
                                     );
 
-    CSR_Data_Masking_Unit #(.XLEN(XLEN),
-                            .SUPPORTED_EXTENSIONS(SUPPORTED_EXTENSIONS))
+    CSR_Data_Masking_Unit #(
+                            .XLEN(XLEN),
+                            .SUPPORTED_EXTENSIONS(SUPPORTED_EXTENSIONS)
+                            )
                             CSR_Data_Masking_Unit_Inst(
                                 .i_new_csr(w_new_csr),
                                 .i_old_csr(w_old_csr),
@@ -74,7 +83,10 @@ module CSR_Unit#(
                                 .o_masked_old_csr_read(o_old_csr_masked_d)
                             );
 
-    M_CSR_Reg_File #(.XLEN(XLEN))
+    M_CSR_Reg_File #(
+                     .XLEN(XLEN),
+                     .ENABLED_PMP_REGISTERS(ENABLED_PMP_REGISTERS)
+                     )
                     M_CSR_Reg_File_Inst(
                         .i_clk(i_clk),
                         .i_rst(i_rst),
@@ -91,8 +103,13 @@ module CSR_Unit#(
                         .i_csr_data(i_csr_data_w),
                         .o_csr_data(w_csr_d),
                         .o_mepc(o_mepc),
+                        .o_concat_pmpaddr(o_concat_pmpaddr),
+                        .o_concat_pmpcfg(o_concat_pmpcfg),
                         .o_UXL(o_UXL)
                     );
+
+
+    
 
 
 

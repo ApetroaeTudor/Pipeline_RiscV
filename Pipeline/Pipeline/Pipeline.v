@@ -1,6 +1,7 @@
 module Pipeline#(
     parameter [1:0] XLEN = `XLEN_64b,
-    parameter [25:0] SUPPORTED_EXTENSIONS = `SUPPORTED_EXTENSIONS
+    parameter [25:0] SUPPORTED_EXTENSIONS = `SUPPORTED_EXTENSIONS,
+    parameter ENABLED_PMP_REGISTERS = 12 // 12 pmpaddr and 4/2 pmpcfg
 )(
     input i_clk,
     input i_rst,
@@ -87,7 +88,8 @@ module Pipeline#(
     wire w_f7_b6;
 
     Data_Path #(.XLEN(XLEN),
-                .SUPPORTED_EXTENSIONS(SUPPORTED_EXTENSIONS)
+                .SUPPORTED_EXTENSIONS(SUPPORTED_EXTENSIONS),
+                .ENABLED_PMP_REGISTERS(ENABLED_PMP_REGISTERS)
                 )           Data_Path_Inst
                             (.i_clk(i_clk),
                              .i_rst(i_rst),

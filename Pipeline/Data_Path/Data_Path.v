@@ -2,7 +2,8 @@
 `include "Constants.vh"
 module Data_Path#(
     parameter [1:0] XLEN = `XLEN_64b,
-    parameter [25:0] SUPPORTED_EXTENSIONS = `SUPPORTED_EXTENSIONS
+    parameter [25:0] SUPPORTED_EXTENSIONS = `SUPPORTED_EXTENSIONS,
+    parameter ENABLED_PMP_REGISTERS = 12
 )(
     input i_clk,
     input i_rst,
@@ -82,6 +83,7 @@ module Data_Path#(
 
 );
 
+
     wire [((1<<(XLEN+4))-1):0] w_pc_in_f; //
     wire [((1<<(XLEN+4))-1):0] w_pc_out_f; //
     wire [((1<<(XLEN+4))-1):0] w_pc_p4_f; //
@@ -115,7 +117,8 @@ module Data_Path#(
     wire [1:0] w_UXL_d;
     wire [((1<<(XLEN+4))-1):0] w_masked_new_csr_d;
     wire [((1<<(XLEN+4))-1):0] w_masked_old_csr_d;
-    
+    wire [(ENABLED_PMP_REGISTERS*(1<<(XLEN+4)))-1:0] w_concat_pmpaddr_d;
+    wire [511:0] w_concat_pmpcfg_d;
 
     
     wire [((1<<(XLEN+4))-1):0] w_alu_out_e; //
@@ -270,18 +273,20 @@ module Data_Path#(
 
 
 
-    Exception_Signals_Handler #(.XLEN(XLEN)) Exception_Signals_Handler_Inst(
+    Exception_Signals_Handler #(
+                                .XLEN(XLEN),
+                                .ENABLED_PMP_REGISTERS(ENABLED_PMP_REGISTERS)
+                                ) 
+        Exception_Signals_Handler_Inst(
         .i_current_privilege(r_privilege),
         .i_pc_f(w_pc_out_f),
         .i_opcode_f(w_instr_f[6:0]),
         .i_res_src_e(w_result_src_e),
-        .i_reg_write_e(w_reg_write_e),
-        .i_rd_e(w_rd_e),
         .i_alu_out_e(w_alu_out_e),
         .i_mem_write_e(w_mem_write_e),
         .i_ecall_e(w_ecall_e),
         .i_f3_e(w_f3_e),
-        .i_ms_12b_f(w_instr_f[31:20]),
+        .i_imm_ms_4b_f(w_instr_f[31:28]),
         .i_store_byte_e(r_store_byte_e),
         .i_store_half_e(r_store_half_e),
         .o_exception_code_f(w_exception_code_f),
@@ -371,7 +376,8 @@ module Data_Path#(
                            );
 
     CSR_Unit #(.XLEN(XLEN),
-               .SUPPORTED_EXTENSIONS(SUPPORTED_EXTENSIONS))
+               .SUPPORTED_EXTENSIONS(SUPPORTED_EXTENSIONS)
+               )
                 CSR_Unit_Inst(
                     .i_clk(i_clk),
                     .i_rst(i_rst),
@@ -397,6 +403,8 @@ module Data_Path#(
                     .o_ecall_d(w_ecall_d),
                     .o_mret_d(w_mret_d),
                     .o_mepc(w_mepc_d),
+                    .o_concat_pmpaddr(w_concat_pmpaddr_d),
+                    .o_concat_pmpcfg(w_concat_pmpcfg_d),
                     .o_UXL(w_UXL_d)  
                 );
 

@@ -1,12 +1,12 @@
-module assert(
+module assert_module(
     input clk,
     input test
 );
     always@(posedge clk)
     begin
-        if(test!==1)
+        if(test!=1)
         begin
-            $display("ASSERTION FAILED IN %m");
+            $display("assert_moduleION FAILED IN %m");
             $finish;
         end
     end

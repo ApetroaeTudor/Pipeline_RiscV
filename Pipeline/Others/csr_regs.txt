@@ -88,7 +88,7 @@ Physical memory protection:
                                                                             01 = TOR(top of range), means the addr corresponding is the top addr
                                                                             10 = NA4 (naturally alligned 4 byte), if the addr in the pmpaddr coresponding is 0x0800_0000,
                                                                                                                     then the affected region is [0x2000_0000, 0x2000_0003]. (can be used to protect memory mapped registers)
-                                                                            11 = NAPOT (naturally alligned power of two). pmpaddr has both the starting addr and the size. 
+                                                                            11 = NAPOT (naturally alligned power of two). pmpaddr has both the   starting addr and the size. 
                                                                                 decoding addr: size is encoded in trailing 1's.
                                                                                 EXAMPLE: 1MiB(2^20) bytes starting at 0x8000_0000
                                                                                         pmpaddr = (0x8000_0000 >> 2 | 1<<(20-2) -1 ).
@@ -100,5 +100,4 @@ Physical memory protection:
 
 
 
-csr regs addresses:
                           

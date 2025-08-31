@@ -12,11 +12,18 @@ module CSR_Data_Masking_Unit#(
     output [((1<<(XLEN+4))-1):0] o_masked_new_csr_write,
     output [((1<<(XLEN+4))-1):0] o_masked_old_csr_read
 );
+    integer i;
+
+    reg [63:0] r_pmpaddr_lock = 64'b0;
+    reg [11:0] r_pmpcfg_current = 0;
+    reg [11:0] r_pmpaddr_current = 0;
+
     reg [((1<<(XLEN+4))-1):0] r_o_masked_new_csr_write;
     assign o_masked_new_csr_write = r_o_masked_new_csr_write;
 
     reg [((1<<(XLEN+4))-1):0] r_o_masked_old_csr_read;
     assign o_masked_old_csr_read = r_o_masked_old_csr_read;
+
 
     //read
     always@(*)
@@ -115,15 +122,63 @@ module CSR_Data_Masking_Unit#(
                        else r_o_masked_new_csr_write = i_new_csr;
                     end
 
+            `REG_PMPCFG0_ADDR,`REG_PMPCFG1_ADDR,`REG_PMPCFG2_ADDR,`REG_PMPCFG3_ADDR,`REG_PMPCFG4_ADDR,
+            `REG_PMPCFG5_ADDR,`REG_PMPCFG6_ADDR,`REG_PMPCFG7_ADDR,`REG_PMPCFG8_ADDR,`REG_PMPCFG9_ADDR,
+            `REG_PMPCFG10_ADDR,`REG_PMPCFG11_ADDR,`REG_PMPCFG12_ADDR,`REG_PMPCFG13_ADDR,`REG_PMPCFG14_ADDR,
+            `REG_PMPCFG15_ADDR:
+            begin
+                if(XLEN == `XLEN_64b) 
+                begin //8 configs per pmpcfg
+                    r_pmpcfg_current = i_csr_addr - `REG_PMPCFG0_ADDR;
+                        
+                    r_pmpaddr_lock[r_pmpcfg_current*8+0] = (i_new_csr[7] ==1'b1)?1'b1:1'b0;
+                    r_pmpaddr_lock[r_pmpcfg_current*8+1] = (i_new_csr[15]==1'b1)?1'b1:1'b0;
+                    r_pmpaddr_lock[r_pmpcfg_current*8+2] = (i_new_csr[23]==1'b1)?1'b1:1'b0;
+                    r_pmpaddr_lock[r_pmpcfg_current*8+3] = (i_new_csr[31]==1'b1)?1'b1:1'b0;
+                    r_pmpaddr_lock[r_pmpcfg_current*8+4] = (i_new_csr[39]==1'b1)?1'b1:1'b0;
+                    r_pmpaddr_lock[r_pmpcfg_current*8+5] = (i_new_csr[47]==1'b1)?1'b1:1'b0;
+                    r_pmpaddr_lock[r_pmpcfg_current*8+6] = (i_new_csr[55]==1'b1)?1'b1:1'b0;
+                    r_pmpaddr_lock[r_pmpcfg_current*8+7] = (i_new_csr[63]==1'b1)?1'b1:1'b0;
+
+
+                    r_o_masked_new_csr_write[`byte_7] = (i_old_csr[63]==1'b0)?i_new_csr[`byte_7]:i_old_csr[`byte_7] ;
+                    r_o_masked_new_csr_write[`byte_6] = (i_old_csr[55]==1'b0)?i_new_csr[`byte_6]:i_old_csr[`byte_6] ;
+                    r_o_masked_new_csr_write[`byte_5] = (i_old_csr[47]==1'b0)?i_new_csr[`byte_5]:i_old_csr[`byte_5] ;
+                    r_o_masked_new_csr_write[`byte_4] = (i_old_csr[39]==1'b0)?i_new_csr[`byte_4]:i_old_csr[`byte_4] ;
+                    r_o_masked_new_csr_write[`byte_3] = (i_old_csr[31]==1'b0)?i_new_csr[`byte_3]:i_old_csr[`byte_3] ;
+                    r_o_masked_new_csr_write[`byte_2] = (i_old_csr[23]==1'b0)?i_new_csr[`byte_2]:i_old_csr[`byte_2] ;
+                    r_o_masked_new_csr_write[`byte_1] = (i_old_csr[15]==1'b0)?i_new_csr[`byte_1]:i_old_csr[`byte_1] ;
+                    r_o_masked_new_csr_write[`byte_0] = (i_old_csr[7] ==1'b0)?i_new_csr[`byte_0]:i_old_csr[`byte_0] ;
+                end
+                else //8 configs per pmpcfg
+                begin
+                    r_pmpcfg_current = i_csr_addr - `REG_PMPCFG0_ADDR;
+
+                    r_pmpaddr_lock[r_pmpcfg_current*4+0] = (i_new_csr[7] ==1'b1)?1'b1:1'b0;
+                    r_pmpaddr_lock[r_pmpcfg_current*4+1] = (i_new_csr[15]==1'b1)?1'b1:1'b0;
+                    r_pmpaddr_lock[r_pmpcfg_current*4+2] = (i_new_csr[23]==1'b1)?1'b1:1'b0;
+                    r_pmpaddr_lock[r_pmpcfg_current*4+3] = (i_new_csr[31]==1'b1)?1'b1:1'b0;
+
+                    r_o_masked_new_csr_write[`byte_3] = (i_old_csr[31]==1'b0)?i_new_csr[`byte_3]:i_old_csr[`byte_3] ;
+                    r_o_masked_new_csr_write[`byte_2] = (i_old_csr[23]==1'b0)?i_new_csr[`byte_2]:i_old_csr[`byte_2] ;
+                    r_o_masked_new_csr_write[`byte_1] = (i_old_csr[15]==1'b0)?i_new_csr[`byte_1]:i_old_csr[`byte_1] ;
+                    r_o_masked_new_csr_write[`byte_0] = (i_old_csr[7] ==1'b0)?i_new_csr[`byte_0]:i_old_csr[`byte_0] ; // if the locked bit is set then dont write data
+                    // the locked bit is set for each pmp entry
+                end
+            end
+
             default:
             begin
                 if(i_csr_addr >= `REG_PMPADDR_BASE_ADDR && i_csr_addr <=`REG_PMPADDR_END_ADDR)
                     begin
-                        r_o_masked_new_csr_write[(1<<(XLEN+4))-1:2] = (i_new_csr[(1<<(XLEN+4))-1:2]);
-                        r_o_masked_new_csr_write[1:0] <= i_old_csr[1:0];
+                        r_pmpaddr_current = i_csr_addr-`REG_PMPADDR_BASE_ADDR;
+                        
+                        r_o_masked_new_csr_write = (r_pmpaddr_lock[r_pmpaddr_current]==1'b0)?i_new_csr:i_old_csr;
+
                     end
                 else r_o_masked_new_csr_write = i_new_csr;
             end
+
 
 
             endcase

@@ -8,7 +8,7 @@
   `define REG_CNT 32
   `define CSR_CNT 104
 
-  `define SUPPORTED_EXTENSIONS 26'b1000_0000
+  `define SUPPORTED_EXTENSIONS 26'b1_0000_0000
 
 
 // privilege levels
@@ -197,7 +197,6 @@
 
 
   `define mie_DEFAULT_VALUE 32'b0000_0000_0000_0000_0000_0000_1000_0010
-
 
   `define byte_7 63:56
   `define byte_6 55:48

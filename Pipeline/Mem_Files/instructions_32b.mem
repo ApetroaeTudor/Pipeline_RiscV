@@ -21,36 +21,88 @@ fec10113  //addi sp,sp,-20;
 
 @00010000 // reset vector lo // 40000 >>2
 
-// tests:
-fffff2b7// lui x5,0xfffff
-fff2e293// ori x5,x5,0xfff
-
-30129973// csrrw x18,misa,x5 (??????????)
-30129673// csrrw x12,misa,x5
+// MSTATUS 000000A0
+0a000293// addi x5,x0,0x0A0
 30029073// csrrw x0,mstatus,x5
-300296f3// csrrw x13,mstatus,x5
-31029073// csrrw x0,mstatush,x5
-31029773// csrrw x14,mstatush,x5
-3b529073// csrrw x0,pmpaddr5,x5
-3b5297f3// csrrw x15,pmpaddr5,x5
-3a029073// csrrw x0,pmpcfg0,x5
-3a029873// csrrw x16,pmpcfg0,x5
-30529073// csrrw x0,mtvec,x5
-305298f3// csrrw x17,mtvec,x5
+
+// MISA 40000080
+400002b7// lui x5,0x40000
+08028293// addi x5,x5,0x080
+30129073// csrrw x0,misa,x5
+
+// PMPADDR0 
+000022b7//lui x5,0x00002;
+3b029073//csrrw x0,pmpaddr0,x5
+
+// PMPADDR1
+000042b7//lui x5,0x00004;
+3b129073//csrrw x0,pmpaddr1,x5
+
+// PMPADDR2
+000f82b7//lui x5,0x000f8;
+0042d293//srli x5,x5,4;
+3b229073//csrrw x0,pmpaddr2,x5
+
+// PMPADDR3
+000102b7//lui x5,0x00010;
+3b329073//csrrw x0,pmpaddr3,x5
+
+// PMPADDR4
+001082b7//lui x5,0x00108;
+0042d293//srli x5,x5,4;
+3b429073//csrrw x0,pmpaddr4,x5
+
+// PMPADDR5
+000112b7//lui x5,0x00011;
+3b529073//csrrw x0,pmpaddr5,x5;
+
+// PMPADDR6
+001182b7//lui x5,0x00118;
+0042d293//srli x5,x5,4;
+3b629073//csrrw x0,pmpaddr6,x5;
+
+// PMPADDR7
+000122b7//lui x5,0x00012;
+3b729073//csrrw x0,pmpaddr7,x5;
+
+// PMPADDR8
+001282b7//lui x5,0x00128;
+0042d293//srli x5,x5,4;
+3b829073//csrrw x0,pmpaddr8,x5;
+
+// PMPCFG0
+898d82b7//lui x5,0x898D8 -> 898D 8000
+88800337//lui x6,0x88800 -> 8880 0000
+01435313//srli x6,x6,20  -> 0000 0888
+0062e2b3//or x5,x5,x6
+3a029073//csrrw x0,pmpcfg0,x5
+
+// PMPCFG1
+888b82b7//lui x5,0x888B8 -> 888B 8000
+b8b00337//lui x6,0xB8B00 -> B8B0 0000
+01435313//srli x6,x6,20  -> 0000 0B8B
+0062e2b3//or x5,x5,x6
+3a129073//csrrw x0, pmpcfg1,x5
+
+// PMPCFG2
+08800293//addi x5,x0,0x88
+3a229073//csrrw x0,pmpcfg2,x5
 
 
+
+
+
+
+
+
+
+// SP AND GP INIT
 0017f137 //lui x2, 0x0017f; 
 fff10113 //addi x2, x2,0xfff; 
 001201b7 //lui x3, 0x00120 
 000802b7 //lui x5, 0x00080              ->> m
 341292f3 // csrrw x5,mepc,x5
 30200073 // mret
-
-
-
-
-
-
 
 
 

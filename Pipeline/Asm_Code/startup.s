@@ -37,7 +37,7 @@ trap_handler:
     addi t2,t2,1
     beq t1,t2, store_addr_mis #-> 6
     addi t2,t2,1
-    beq t1,t2, store_addr_fault #-> 7
+    beq t1,t2, STORE_ACCESS_FAULT #-> 7
     addi t2,t2,1
     beq t1,t2, ecall #-> 8
 
@@ -72,7 +72,7 @@ load_access_fault:
 store_addr_mis:
     jal x0,exit
 
-store_addr_fault:
+STORE_ACCESS_FAULT:
     jal x0,exit
 
 ecall:

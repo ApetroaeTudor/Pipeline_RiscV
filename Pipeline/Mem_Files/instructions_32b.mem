@@ -19,7 +19,7 @@ fec10113  //addi sp,sp,-20;
 30200073  //mret; 
 
 
-@00010000 // reset vector lo // 40000 >>2
+@00002000 // reset vector lo // 8000 >>2
 
 // MSTATUS 000000A0
 0a000293// addi x5,x0,0x0A0
@@ -70,8 +70,8 @@ fec10113  //addi sp,sp,-20;
 0042d293//srli x5,x5,4;
 3b829073//csrrw x0,pmpaddr8,x5;
 
-// PMPCFG0
-898d82b7//lui x5,0x898D8 -> 898D 8000
+// PMPCFG0                  8989_8888
+898982b7//lui x5,0x89898 -> 8989 8000
 88800337//lui x6,0x88800 -> 8880 0000
 01435313//srli x6,x6,20  -> 0000 0888
 0062e2b3//or x5,x5,x6
@@ -90,17 +90,14 @@ b8b00337//lui x6,0xB8B00 -> B8B0 0000
 
 
 
+// SP
+// 0004 6000
+00046137 //lui x2,0x00046
 
 
 
-
-
-
-// SP AND GP INIT
-0017f137 //lui x2, 0x0017f; 
-fff10113 //addi x2, x2,0xfff; 
-001201b7 //lui x3, 0x00120 
-000802b7 //lui x5, 0x00080              ->> m
+// mret to 0001 0000
+000102b7 // lui x5, 0x00010              ->> m
 341292f3 // csrrw x5,mepc,x5
 30200073 // mret
 
@@ -108,7 +105,7 @@ fff10113 //addi x2, x2,0xfff;
 
 
 
-@00020000 // text lo // 80000 >>2 
+@00004000 // text lo // 10000 >>2 
 
 
 000bfeb7 //lui x29,0x000bf // success // t4                 ->> m

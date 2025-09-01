@@ -1,4 +1,4 @@
-`include "Constants.vh"
+`include "riscv_defines.vh"
 module CSR_Behavior_Unit#(
     parameter [1:0] XLEN = `XLEN_64b
 )(

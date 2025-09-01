@@ -1,8 +1,7 @@
-`include "Constants.vh"
+`include "riscv_defines.vh"
 
 module M_CSR_Reg_File#(
-    parameter [1:0] XLEN = `XLEN_64b,
-    parameter ENABLED_PMP_REGISTERS = 12
+    parameter [1:0] XLEN = `XLEN_64b
 )( // this should always output mtvec and mepc
     input i_clk,
     input i_rst,
@@ -26,7 +25,7 @@ module M_CSR_Reg_File#(
 
     output [(1<<(XLEN+4))-1:0] o_mepc,
 
-    output [(ENABLED_PMP_REGISTERS*(1<<(XLEN+4)))-1:0] o_concat_pmpaddr,
+    output [((1<<(XLEN+4))<<6)-1:0] o_concat_pmpaddr,
     output [511:0] o_concat_pmpcfg,
 
     output [1:0] o_UXL
@@ -35,8 +34,6 @@ module M_CSR_Reg_File#(
 
     integer i;
 
-
- 
     
     reg [(1<<(XLEN+4))-1:0] r_pmpaddr[63:0];
 
@@ -97,18 +94,25 @@ module M_CSR_Reg_File#(
 
 
 
-    reg [(ENABLED_PMP_REGISTERS*(1<<(XLEN+4)))-1:0] r_concat_pmpaddr; // 64/32 x number of used pmpaddr (i use less to save resources)
-    assign o_concat_pmpaddr = r_concat_pmpaddr;
+    // reg [(1<<(XLEN+4))<<6:0] r_concat_pmpaddr; // 64/32 x 64
+    // assign o_concat_pmpaddr = r_concat_pmpaddr;
+
+
     reg [511:0] r_concat_pmpcfg; // for each pmpaddr there is a pmpconfig byte
     assign o_concat_pmpcfg = r_concat_pmpcfg;
 
 
+    genvar j; // system verilog 
+
+    generate
+        for (j=0;j<64;j=j+1)
+        begin
+            assign o_concat_pmpaddr[((j+1)*(1<<(XLEN+4))-1):j*(1<<(XLEN+4))] = r_pmpaddr[j];
+        end
+    endgenerate
+
     always@(*)
     begin
-            for(i=1;i<=ENABLED_PMP_REGISTERS;i=i+1)
-            begin
-                r_concat_pmpaddr[i*31:(i-1)*32] = r_pmpaddr[i-1]; 
-            end
 
             if(XLEN == `XLEN_64b)
             begin

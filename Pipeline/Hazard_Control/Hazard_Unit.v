@@ -1,4 +1,4 @@
-`include "Constants.vh"
+`include "riscv_defines.vh"
 module Hazard_Unit(
     input [6:0] i_opcode_d, 
     input [2:0] i_f3_d, 

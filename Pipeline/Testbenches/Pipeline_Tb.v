@@ -1,5 +1,5 @@
 `timescale 1ns / 1ns
-`include "Constants.vh"
+`include "riscv_defines.vh"
 module Pipeline_Tb;
 reg t_r_clk;
 reg t_r_probe_clk;

@@ -1,4 +1,4 @@
-`include "Constants.vh"
+`include "riscv_defines.vh"
 
 module Control_Unit(
     input [6:0] i_opcode,

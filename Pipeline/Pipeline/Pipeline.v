@@ -17,6 +17,21 @@ module Pipeline#(
     end
 
 
+    // exception signals gen
+    wire [((1<<(XLEN+4))-1):0] w_pc_f;
+    wire [6:0] w_opcode_f;
+    wire [3:0] w_imm_ms_4b_f;
+    wire [((1<<(XLEN+4))-1):0] w_alu_out_e;
+    wire w_mem_write_e;
+    wire w_ecall_e;
+    wire w_store_byte_e;
+    wire w_store_half_e;
+    wire [1:0] w_current_privilege;
+    wire [((1<<(XLEN+4))<<6)-1:0] w_concat_pmpaddr;
+    wire [511:0] w_concat_pmpcfg;
+    wire [3:0] w_exception_code_f;
+    wire [3:0] w_exception_code_e;
+
 
     wire w_fw_a_d;
     wire w_fw_b_d;
@@ -68,12 +83,6 @@ module Pipeline#(
     wire w_if_id_stall;
     wire w_id_ex_flush;
     wire w_pc_stall;
-
- 
-  
-   
-    
-  
 
 
     wire [1:0] w_result_src;
@@ -157,7 +166,43 @@ module Pipeline#(
 
                              
                              .o_res_src_b0_e(w_res_src_b0_e),
-                             .o_pc_src_e(w_pc_src_e));
+                             .o_pc_src_e(w_pc_src_e),
+                             
+                             .o_pc_f(w_pc_f),
+                             .o_opcode_f(w_opcode_f),
+                             .o_imm_ms_4b_f(w_imm_ms_4b_f),
+                             .o_alu_out_e(w_alu_out_e),
+                             .o_mem_write_e(w_mem_write_e),
+                             .o_ecall_e(w_ecall_e),
+                             .o_store_byte_e(w_store_byte_e),
+                             .o_store_half_e(w_store_half_e),
+                             .o_current_privilege(w_current_privilege),
+                             .o_concat_pmpaddr(w_concat_pmpaddr),
+                             .o_concat_pmpcfg(w_concat_pmpcfg),
+                             .i_exception_code_f(w_exception_code_f),
+                             .i_exception_code_e(w_exception_code_e)
+                             );
+
+
+    Exception_Signals_Handler #(
+                                .XLEN(XLEN),
+                                .ENABLED_PMP_REGISTERS(ENABLED_PMP_REGISTERS)
+                                ) 
+        Exception_Signals_Handler_Inst(
+        .i_current_privilege(w_current_privilege),
+        .i_pc_f(w_pc_f),
+        .i_opcode_f(w_opcode_f),
+        .i_res_src_b0_e(w_res_src_b0_e),
+        .i_alu_out_e(w_alu_out_e),
+        .i_mem_write_e(w_mem_write_e),
+        .i_ecall_e(w_ecall_e),
+        .i_f3_e(w_f3_e),
+        .i_imm_ms_4b_f(w_imm_ms_4b_f),
+        .i_store_byte_e(w_store_byte_e),
+        .i_store_half_e(w_store_half_e),
+        .o_exception_code_f(w_exception_code_f),
+        .o_exception_code_e(w_exception_code_e)
+    );
 
 
     Control_Path Control_Path_Inst(.i_opcode(w_opcode_d),

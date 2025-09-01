@@ -1,4 +1,4 @@
-`include "Constants.vh"
+`include "riscv_defines.vh"
 
 module CSR_Data_Masking_Unit#(
     parameter [1:0] XLEN = `XLEN_64b,
@@ -196,7 +196,7 @@ module CSR_Data_Masking_Unit#(
         {{((1<<(XLEN+4))-6){1'b0}},`E_ILLEGAL_INSTR },
         {{((1<<(XLEN+4))-6){1'b0}},`E_LOAD_ADDR_MISALIGNED },
         {{((1<<(XLEN+4))-6){1'b0}},`E_LOAD_ACCESS_FAULT },
-        {{((1<<(XLEN+4))-6){1'b0}},`E_STORE_ADDR_FAULT },
+        {{((1<<(XLEN+4))-6){1'b0}},`E_STORE_ACCESS_FAULT },
         {{((1<<(XLEN+4))-6){1'b0}},`E_STORE_ADDR_MISALIGNED },
         {{((1<<(XLEN+4))-6){1'b0}},`E_ECALL }: legalize_exception_code = value;
         default: legalize_exception_code = 0;

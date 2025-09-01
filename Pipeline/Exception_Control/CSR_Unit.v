@@ -1,7 +1,6 @@
 module CSR_Unit#(
     parameter [1:0] XLEN = `XLEN_64b,
-    parameter [25:0] SUPPORTED_EXTENSIONS = `SUPPORTED_EXTENSIONS,
-    parameter ENABLED_PMP_REGISTERS = 12
+    parameter [25:0] SUPPORTED_EXTENSIONS = `SUPPORTED_EXTENSIONS
 )(
     input i_clk,
     input i_rst,
@@ -33,7 +32,7 @@ module CSR_Unit#(
     output o_mret_d,
     output [(1<<(XLEN+4))-1:0] o_mepc,
 
-    output [(ENABLED_PMP_REGISTERS*(1<<(XLEN+4)))-1:0] o_concat_pmpaddr,
+    output [((1<<(XLEN+4))<<6)-1:0] o_concat_pmpaddr,
     output [511:0] o_concat_pmpcfg,
 
     output [1:0] o_UXL
@@ -84,8 +83,7 @@ module CSR_Unit#(
                             );
 
     M_CSR_Reg_File #(
-                     .XLEN(XLEN),
-                     .ENABLED_PMP_REGISTERS(ENABLED_PMP_REGISTERS)
+                     .XLEN(XLEN)
                      )
                     M_CSR_Reg_File_Inst(
                         .i_clk(i_clk),

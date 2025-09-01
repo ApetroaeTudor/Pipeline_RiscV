@@ -1,4 +1,4 @@
-`include "Constants.vh"
+`include "riscv_defines.vh"
 
 module Mem_Instr #(
     parameter [1:0]XLEN = `XLEN_64b

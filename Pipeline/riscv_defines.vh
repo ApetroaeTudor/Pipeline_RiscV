@@ -98,7 +98,7 @@
   `define E_LOAD_ADDR_MISALIGNED 4'b0100
   `define E_LOAD_ACCESS_FAULT 4'b0101
   `define E_STORE_ADDR_MISALIGNED 4'b0110
-  `define E_STORE_ADDR_FAULT 4'b0111 // detected in execute
+  `define E_STORE_ACCESS_FAULT 4'b0111 // detected in execute
 
   `define E_ECALL 4'b1000 
   `define NO_E 4'b1111

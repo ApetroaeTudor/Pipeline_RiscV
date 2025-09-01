@@ -1,5 +1,5 @@
 `default_nettype none
-`include "Constants.vh"
+`include "riscv_defines.vh"
 module Data_Path#(
     parameter [1:0] XLEN = `XLEN_64b,
     parameter [25:0] SUPPORTED_EXTENSIONS = `SUPPORTED_EXTENSIONS,
@@ -79,7 +79,23 @@ module Data_Path#(
 
     output [6:0] o_opcode_w, 
     output [2:0] o_f3_w, 
-    output [11:0] o_imm_w 
+    output [11:0] o_imm_w,
+
+
+    // for exception handler
+    output [((1<<(XLEN+4))-1):0] o_pc_f,
+    output [6:0] o_opcode_f,
+    output [3:0] o_imm_ms_4b_f,
+    output [((1<<(XLEN+4))-1):0] o_alu_out_e,
+    output o_mem_write_e,
+    output o_ecall_e,
+    output o_store_byte_e,
+    output o_store_half_e,
+    output [1:0] o_current_privilege,
+    output [((1<<(XLEN+4))<<6)-1:0] o_concat_pmpaddr,
+    output [511:0] o_concat_pmpcfg,
+    input [3:0] i_exception_code_f, 
+    input [3:0] i_exception_code_e
 
 );
 
@@ -117,7 +133,7 @@ module Data_Path#(
     wire [1:0] w_UXL_d;
     wire [((1<<(XLEN+4))-1):0] w_masked_new_csr_d;
     wire [((1<<(XLEN+4))-1):0] w_masked_old_csr_d;
-    wire [(ENABLED_PMP_REGISTERS*(1<<(XLEN+4)))-1:0] w_concat_pmpaddr_d;
+    wire [((1<<(XLEN+4))<<6)-1:0] w_concat_pmpaddr_d;
     wire [511:0] w_concat_pmpcfg_d;
 
     
@@ -271,27 +287,23 @@ module Data_Path#(
     end
 
 
+    assign o_pc_f = w_pc_out_f;
+    assign o_opcode_f = w_instr_f[6:0];
+    assign o_imm_ms_4b_f = w_instr_f[31:28];
+    assign o_alu_out_e = w_alu_out_e;
+    assign o_mem_write_e = w_mem_write_e;
+    assign o_ecall_e = w_ecall_e;
+    assign o_store_byte_e = r_store_byte_e;
+    assign o_store_half_e = r_store_half_e;
+    assign o_current_privilege = r_privilege;
+    assign o_concat_pmpaddr = w_concat_pmpaddr_d;
+    assign o_concat_pmpcfg = w_concat_pmpcfg_d;
+
+    assign w_exception_code_f = i_exception_code_f;
+    assign w_exception_code_e = i_exception_code_e;
 
 
-    Exception_Signals_Handler #(
-                                .XLEN(XLEN),
-                                .ENABLED_PMP_REGISTERS(ENABLED_PMP_REGISTERS)
-                                ) 
-        Exception_Signals_Handler_Inst(
-        .i_current_privilege(r_privilege),
-        .i_pc_f(w_pc_out_f),
-        .i_opcode_f(w_instr_f[6:0]),
-        .i_res_src_e(w_result_src_e),
-        .i_alu_out_e(w_alu_out_e),
-        .i_mem_write_e(w_mem_write_e),
-        .i_ecall_e(w_ecall_e),
-        .i_f3_e(w_f3_e),
-        .i_imm_ms_4b_f(w_instr_f[31:28]),
-        .i_store_byte_e(r_store_byte_e),
-        .i_store_half_e(r_store_half_e),
-        .o_exception_code_f(w_exception_code_f),
-        .o_exception_code_e(w_exception_code_e)
-    );
+    
 
 
     // IF ------------------------------------------------------------

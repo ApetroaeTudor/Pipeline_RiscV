@@ -17,6 +17,7 @@ module CSR_Unit#(
     input i_mret_e,
 
     input  [(1<<(XLEN+4))-1:0] i_csr_data_w,
+    input [1:0] i_current_privilege,
 
 
 
@@ -35,7 +36,9 @@ module CSR_Unit#(
     output [((1<<(XLEN+4))<<6)-1:0] o_concat_pmpaddr,
     output [511:0] o_concat_pmpcfg,
 
-    output [1:0] o_UXL
+    output [1:0] o_UXL,
+
+    output [1:0] o_new_priv
 );
 
     wire [6:0] w_opcode_d = i_instr_d[6:0];
@@ -48,6 +51,7 @@ module CSR_Unit#(
     wire [((1<<(XLEN+4))-1):0] w_csr_d; // read from the instantiated regfile
     wire [((1<<(XLEN+4))-1):0] w_old_csr;
     wire [((1<<(XLEN+4))-1):0] w_new_csr;
+
 
 
     CSR_Behavior_Unit #(
@@ -98,12 +102,14 @@ module CSR_Unit#(
                         .i_exception_pc_e_m_ff(i_exception_pc_e_m_ff),
                         .i_exception_addr_e_m_ff(i_exception_addr_e_m_ff),
                         .i_mret_e(i_mret_e),
+                        .i_current_privilege(i_current_privilege),
                         .i_csr_data(i_csr_data_w),
                         .o_csr_data(w_csr_d),
                         .o_mepc(o_mepc),
                         .o_concat_pmpaddr(o_concat_pmpaddr),
                         .o_concat_pmpcfg(o_concat_pmpcfg),
-                        .o_UXL(o_UXL)
+                        .o_UXL(o_UXL),
+                        .o_new_priv(o_new_priv)
                     );
 
 

@@ -1,82 +1,111 @@
-module Pipeline#(
+module Core#(
     parameter [1:0] XLEN = `XLEN_64b,
     parameter [25:0] SUPPORTED_EXTENSIONS = `SUPPORTED_EXTENSIONS,
     parameter ENABLED_PMP_REGISTERS = 12 // 12 pmpaddr and 4/2 pmpcfg
 )(
     input i_clk,
     input i_rst,
-    input i_btn_enable_d_s_o
+    input i_btn_enable_d_s_o,
+
+    input i_clk_en,
+
+
+
+
+
+
+    // for mem management -> rom/ram data mem gets info from e, delays it 1 cc to mem stage where it will be used
+    output [((1<<(XLEN+4))-1):0] o_mem_addr_e, //
+    output [((1<<(XLEN+4))-1):0] o_mem_data_e, //
+    output o_store_byte_e,  //
+    output o_store_half_e,  //
+
+    input [((1<<(XLEN+4))-1):0] i_mem_data_m, // this is data received from ram OR dataRom
+
+
+
+    // for mem mapper
+    output [((1<<(XLEN+4))-1):0] o_fetch_addr_f, //
+    output o_lw_e,  //
+    output o_sw_e,  //
+    input i_bad_addr_f, 
+    input i_bad_addr_load_e, 
+    input i_bad_addr_store_e,
+    
+    // for instr rom
+    input [31:0] i_instr_f
 );
 
-    reg r_clk_en = 1'b0;
+    assign o_mem_addr_e = w_alu_out_e;
+    assign o_store_byte_e = w_store_byte_e;
+    assign o_store_half_e = w_store_half_e;
+    assign o_fetch_addr_f = w_pc_f;
+    assign o_lw_e = w_res_src_b0_e;
+    assign o_sw_e = w_mem_write_e;
 
-    always@(posedge i_clk)
-    begin
-        if(i_btn_enable_d_s_o)
-        r_clk_en<=~r_clk_en;
-    end
 
 
+  
     // exception signals gen
-    wire [((1<<(XLEN+4))-1):0] w_pc_f;
-    wire [6:0] w_opcode_f;
-    wire [3:0] w_imm_ms_4b_f;
-    wire [((1<<(XLEN+4))-1):0] w_alu_out_e;
-    wire w_mem_write_e;
-    wire w_ecall_e;
-    wire w_store_byte_e;
-    wire w_store_half_e;
-    wire [1:0] w_current_privilege;
+    wire [((1<<(XLEN+4))-1):0]    w_pc_f;
+    wire [6:0]                    w_opcode_f;
+    wire [3:0]                    w_imm_ms_4b_f;
+    wire [((1<<(XLEN+4))-1):0]    w_alu_out_e;
+    wire                          w_mem_write_e;
+    wire                          w_ecall_e;
+    wire                          w_store_byte_e;
+    wire                          w_store_half_e;
+    wire [1:0]                    w_current_privilege;
     wire [((1<<(XLEN+4))<<6)-1:0] w_concat_pmpaddr;
-    wire [511:0] w_concat_pmpcfg;
-    wire [3:0] w_exception_code_f;
-    wire [3:0] w_exception_code_e;
+    wire [511:0]                  w_concat_pmpcfg;
+    wire [3:0]                    w_exception_code_f;
+    wire [3:0]                    w_exception_code_e;
 
 
-    wire w_fw_a_d;
-    wire w_fw_b_d;
-    wire [4:0] w_rs1_d;
-    wire [4:0] w_rs2_d;
-    wire [6:0] w_opcode_d;
-    wire [2:0] w_f3_d;
+    wire        w_fw_a_d;
+    wire        w_fw_b_d;
+    wire [4:0]  w_rs1_d;
+    wire [4:0]  w_rs2_d;
+    wire [6:0]  w_opcode_d;
+    wire [2:0]  w_f3_d;
     wire [11:0] w_imm_d;
-    wire [1:0] w_fw_normal_into_csr_d;
-    wire [1:0] w_fw_csr_csr_reg_d;
-    wire [1:0] w_fw_csr_csr_csr_d;
-    wire w_alu_src_opb_d;
-    wire [1:0] w_alu_src_opa_d;
-    wire [1:0] w_alu_shift_d;
-    wire w_sign_ext_d;
+    wire [1:0]  w_fw_normal_into_csr_d;
+    wire [1:0]  w_fw_csr_csr_reg_d;
+    wire [1:0]  w_fw_csr_csr_csr_d;
+    wire        w_alu_src_opb_d;
+    wire [1:0]  w_alu_src_opa_d;
+    wire [1:0]  w_alu_shift_d;
+    wire        w_sign_ext_d;
 
 
 
-    wire [1:0] w_fw_a_e;
-    wire [1:0] w_fw_b_e;
-    wire [4:0] w_rs1_e;
-    wire [4:0] w_rs2_e;
-    wire [4:0] w_rd_e;
-    wire w_res_src_b0_e;
-    wire [1:0] w_pc_src_e;
-    wire w_jmp_e;
-    wire [6:0] w_opcode_e;
-    wire [2:0] w_f3_e;
+    wire [1:0]  w_fw_a_e;
+    wire [1:0]  w_fw_b_e;
+    wire [4:0]  w_rs1_e;
+    wire [4:0]  w_rs2_e;
+    wire [4:0]  w_rd_e;
+    wire        w_res_src_b0_e;
+    wire [1:0]  w_pc_src_e;
+    wire        w_jmp_e;
+    wire [6:0]  w_opcode_e;
+    wire [2:0]  w_f3_e;
     wire [11:0] w_imm_e;
-    wire w_mret_e;
-    wire [1:0] w_fw_csr_into_normal_a_e;
-    wire [1:0] w_fw_csr_into_normal_b_e;
-    wire [1:0] w_fw_mret_e;
+    wire        w_mret_e;
+    wire [1:0]  w_fw_csr_into_normal_a_e;
+    wire [1:0]  w_fw_csr_into_normal_b_e;
+    wire [1:0]  w_fw_mret_e;
 
 
-    wire [4:0] w_rd_m;
-    wire [6:0] w_opcode_m;
-    wire [2:0] w_f3_m;
+    wire [4:0]  w_rd_m;
+    wire [6:0]  w_opcode_m;
+    wire [2:0]  w_f3_m;
     wire [11:0] w_imm_m;
 
 
 
-    wire [4:0] w_rd_w;
-    wire [6:0] w_opcode_w;
-    wire [2:0] w_f3_w;
+    wire [4:0]  w_rd_w;
+    wire [6:0]  w_opcode_w;
+    wire [2:0]  w_f3_w;
     wire [11:0] w_imm_w;
 
     wire w_if_id_flush;
@@ -86,15 +115,14 @@ module Pipeline#(
 
 
     wire [1:0] w_result_src;
-    wire w_branch;
-    wire w_jmp_d;
-    wire w_mem_write;
-    wire w_reg_write;
+    wire       w_branch;
+    wire       w_jmp_d;
+    wire       w_mem_write;
+    wire       w_reg_write;
     wire [2:0] w_alu_ctl;
  
     wire [2:0] w_imm_src;
-
-    wire w_f7_b6;
+    wire       w_f7_b6;
 
     Data_Path #(.XLEN(XLEN),
                 .SUPPORTED_EXTENSIONS(SUPPORTED_EXTENSIONS),
@@ -102,7 +130,7 @@ module Pipeline#(
                 )           Data_Path_Inst
                             (.i_clk(i_clk),
                              .i_rst(i_rst),
-                             .i_clk_en(r_clk_en),
+                             .i_clk_en(i_clk_en),
                              
                              .i_pc_wr_en_h(~w_pc_stall),
                              .i_if_id_flush_h(w_if_id_flush),
@@ -180,7 +208,12 @@ module Pipeline#(
                              .o_concat_pmpaddr(w_concat_pmpaddr),
                              .o_concat_pmpcfg(w_concat_pmpcfg),
                              .i_exception_code_f(w_exception_code_f),
-                             .i_exception_code_e(w_exception_code_e)
+                             .i_exception_code_e(w_exception_code_e),
+
+                             .o_mem_data_e(o_mem_data_e),
+                             .i_mem_data_m(i_mem_data_m),
+
+                             .i_instr_f(i_instr_f)
                              );
 
 
@@ -200,6 +233,11 @@ module Pipeline#(
         .i_imm_ms_4b_f(w_imm_ms_4b_f),
         .i_store_byte_e(w_store_byte_e),
         .i_store_half_e(w_store_half_e),
+        .i_bad_addr_f(i_bad_addr_f),
+        .i_bad_addr_load_e(i_bad_addr_load_e),
+        .i_bad_addr_store_e(i_bad_addr_store_e),
+        .i_concat_pmpaddr(w_concat_pmpaddr),
+        .i_concat_pmpcfg(w_concat_pmpcfg),
         .o_exception_code_f(w_exception_code_f),
         .o_exception_code_e(w_exception_code_e)
     );
@@ -248,6 +286,7 @@ module Pipeline#(
                                  .i_res_src_b0_e(w_res_src_b0_e),
                                  .i_pc_src_e(w_pc_src_e),
                                  .i_jmp_e(w_jmp_e),
+
                                  
                                  .o_fw_a_e(w_fw_a_e),
                                  .o_fw_b_e(w_fw_b_e),

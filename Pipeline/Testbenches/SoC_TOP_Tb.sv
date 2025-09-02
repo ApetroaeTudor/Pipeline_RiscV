@@ -1,6 +1,6 @@
 `timescale 1ns / 1ns
 `include "riscv_defines.vh"
-module Pipeline_Tb;
+module SoC_TOP_Tb;
 reg t_r_clk;
 reg t_r_probe_clk;
 reg t_r_rst;
@@ -9,16 +9,34 @@ localparam XLEN = `XLEN_32b;
 localparam SUPPORTED_EXTENSIONS = `SUPPORTED_EXTENSIONS;
 localparam ENABLED_PMP_REGISTERS = 12;
 
-reg t_r_assert_reg_final = 1'b1;
-assert_module assert_reg_final_value(
-                        .clk(t_r_clk),
-                        .test(t_r_assert_reg_final)
-                        );
+localparam INSTR_ROM_START = `TRAP_LO;
+localparam INSTR_ROM_END = `TEXT_HI;
+localparam DATA_ROM_START = `ROM_DATA_LO;
+localparam DATA_ROM_END = `ROM_DATA_HI;
+localparam DATA_RAM_START = `GLOBAL_LO;
+localparam DATA_RAM_END = `STACK_HI;
+localparam IO_START = `IO_LO;
+localparam IO_END = `IO_HI;
 
-Pipeline #(.XLEN(XLEN),
+localparam DATA_RAM_DUMP_FILE_PATH = "Others/Dumps/ram_mem_dumps.txt";
+localparam DATA_ROM_DUMP_FILE_PATH = "Others/Dumps/rom_mem_dumps.txt";
+
+localparam REGS_DUMP_FILE_PATH = "Others/Dumps/reg_dumps.txt";
+localparam CSR_REGS_DUMP_FILE_PATH = "Others/Dumps/csr_dumps.txt";
+
+SoC_TOP #(.XLEN(XLEN),
           .SUPPORTED_EXTENSIONS(SUPPORTED_EXTENSIONS),
-          .ENABLED_PMP_REGISTERS(ENABLED_PMP_REGISTERS)) 
-              DUT(
+          .ENABLED_PMP_REGISTERS(ENABLED_PMP_REGISTERS),
+          .INSTR_ROM_START(INSTR_ROM_START), 
+          .INSTR_ROM_END(INSTR_ROM_END),
+          .DATA_ROM_START(DATA_ROM_START),
+          .DATA_ROM_END(DATA_ROM_END),
+          .DATA_RAM_START(DATA_RAM_START),
+          .DATA_RAM_END(DATA_RAM_END),
+          .IO_START(IO_START),
+          .IO_END(IO_END)
+          ) 
+              SoC_TOP_DUT(
              .i_clk(t_r_clk),
              .i_rst(t_r_rst),
              .i_btn_enable_d_s_o(t_r_btn_enable_d_s_o)
@@ -29,14 +47,12 @@ Pipeline #(.XLEN(XLEN),
 always #5 t_r_clk = ~t_r_clk;
 always #100 t_r_probe_clk = ~t_r_probe_clk;
 
-`define dmem DUT.Data_Path_Inst.Mem_Data_Inst.r_mem_data
-`define regs DUT.Data_Path_Inst.Reg_File_Inst.r_registers
-`define csr_regs DUT.Data_Path_Inst.CSR_Unit_Inst.M_CSR_Reg_File_Inst
-// `define csr_regs DUT.Data_Path_Inst.M_CSR_Reg_File_Inst
+`define dmem_ram SoC_TOP_DUT.Mem_Data_RAM_Inst.r_mem_data
+`define dmem_rom SoC_TOP_DUT.Mem_Data_ROM_Inst.r_mem_data
 
-// `define test_reg 5
-// `define csr_test_reg_1 `mstatus-12'h300
-// `define csr_test_reg_2 `mstatush-12'h300
+`define regs SoC_TOP_DUT.Core_Inst.Data_Path_Inst.Reg_File_Inst.r_registers
+`define csr_regs SoC_TOP_DUT.Core_Inst.Data_Path_Inst.CSR_Unit_Inst.M_CSR_Reg_File_Inst
+
 
 
 integer fd_reg_dump;
@@ -52,10 +68,10 @@ task dump_mem;
         for(i=start_addr;i<end_addr;i=i+4)
         begin
             $fdisplay(fd_mem_dump,"mem[%04h] = %h_%h_%h_%h",i,
-            `dmem[i+3],
-            `dmem[i+2],
-            `dmem[i+1],
-            `dmem[i]);
+            `dmem_rom[i+3],
+            `dmem_rom[i+2],
+            `dmem_rom[i+1],
+            `dmem_rom[i]);
         end
     end
 
@@ -165,15 +181,15 @@ end
 initial
 begin
     $dumpfile("waveform.vcd");
-    $dumpvars(0,Pipeline_Tb);
+    $dumpvars(0,SoC_TOP_Tb);
 
-    fd_reg_dump = $fopen("./Dumps/reg_dumps.txt","w");
+    fd_reg_dump = $fopen(REGS_DUMP_FILE_PATH,"w");
     if(fd_reg_dump == 0) $display("could not open reg dump file");
 
-    fd_mem_dump = $fopen("./Dumps/mem_dumps.txt","w");
+    fd_mem_dump = $fopen(DATA_RAM_DUMP_FILE_PATH,"w");
     if(fd_mem_dump == 0) $display("could not open mem dump file");
 
-    fd_csr_dump = $fopen("./Dumps/csr_dumps.txt","w");
+    fd_csr_dump = $fopen(CSR_REGS_DUMP_FILE_PATH,"w");
     if(fd_csr_dump == 0) $display("could not open csr dump file");
 
     t_r_clk=1'b1;
@@ -190,7 +206,7 @@ begin
 
 
     #6990
-    // t_r_assert_reg_final = (`regs[31] == 2);
+    assert(`regs[31] == 2) else $warning("regs[31]!=2");
 
     #7000
     $finish;

@@ -21,8 +21,9 @@ fec10113  //addi sp,sp,-20;
 
 @00002000 // reset vector lo // 8000 >>2
 
-// MSTATUS 000000A0
-0a000293// addi x5,x0,0x0A0
+// MSTATUS 000000A0 0000 08A0
+008a02b7//lui x5, 0x08a0 -> 08a0 0000
+0102d293//srli x5,x5,16  -> 0000 08a0
 30029073// csrrw x0,mstatus,x5
 
 // MISA 40000080
@@ -70,8 +71,8 @@ fec10113  //addi sp,sp,-20;
 0042d293//srli x5,x5,4;
 3b829073//csrrw x0,pmpaddr8,x5;
 
-// PMPCFG0                  8989_8888
-898982b7//lui x5,0x89898 -> 8989 8000
+// PMPCFG0                  898c_8888
+898c82b7//lui x5,0x898c8 -> 898c 8000
 88800337//lui x6,0x88800 -> 8880 0000
 01435313//srli x6,x6,20  -> 0000 0888
 0062e2b3//or x5,x5,x6
@@ -106,7 +107,6 @@ b8b00337//lui x6,0xB8B00 -> B8B0 0000
 
 
 @00004000 // text lo // 10000 >>2 
-
 
 000bfeb7 //lui x29,0x000bf // success // t4                 ->> m
 00100e37 //lui x28,0x00100 // start of datamem //t3         ->> m

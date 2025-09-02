@@ -21,9 +21,6 @@ module Mem_Instr #(
     reg [31:0] temp_mem [(1<<20)-1:0];
     integer i;
 
-    wire [31:0] w_40 = r_mem_instr[32'h0004_0000];
-    wire [31:0] w_44 = r_mem_instr[32'h0004_0004];
-
 
     `ifdef DEBUG
           initial begin

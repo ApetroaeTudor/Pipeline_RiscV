@@ -17,10 +17,12 @@ module M_CSR_Reg_File#(
     input [((1<<(XLEN+4))-1):0] i_exception_pc_e_m_ff,
     input [((1<<(XLEN+4))-1):0] i_exception_addr_e_m_ff,
     input i_mret_e,
-    
+    input [1:0] i_current_privilege,
 
 
     input  [(1<<(XLEN+4))-1:0] i_csr_data,
+
+
     output [(1<<(XLEN+4))-1:0] o_csr_data,
 
     output [(1<<(XLEN+4))-1:0] o_mepc,
@@ -28,9 +30,15 @@ module M_CSR_Reg_File#(
     output [((1<<(XLEN+4))<<6)-1:0] o_concat_pmpaddr,
     output [511:0] o_concat_pmpcfg,
 
-    output [1:0] o_UXL
+    output [1:0] o_UXL,
+
+    output [1:0] o_new_priv
 
 );
+
+    reg [1:0] r_new_priv;
+    assign o_new_priv = r_new_priv;
+
 
     integer i;
 
@@ -116,7 +124,7 @@ module M_CSR_Reg_File#(
 
             if(XLEN == `XLEN_64b)
             begin
-                r_concat_pmpcfg[`byte_0]  = r_pmpcfg0[`byte_0];  // this is very poorly done
+                r_concat_pmpcfg[`byte_0]  = r_pmpcfg0[`byte_0];  // i'm sorry
                 r_concat_pmpcfg[`byte_1]  = r_pmpcfg0[`byte_1];
                 r_concat_pmpcfg[`byte_2]  = r_pmpcfg0[`byte_2];
                 r_concat_pmpcfg[`byte_3]  = r_pmpcfg0[`byte_3];
@@ -354,13 +362,14 @@ module M_CSR_Reg_File#(
 
     end
 
-    assign o_UXL = (XLEN == `XLEN_64b)?r_mstatus[33:32]:XLEN;
+    assign o_UXL = (XLEN == `XLEN_64b)?r_mstatus_uxl:XLEN;
 
 
     always@(posedge i_clk)
     begin
         if(i_rst)
         begin
+            r_new_priv    <= i_current_privilege;
             r_mvendorid   <= 0;
             r_marchid     <= 0;
             r_mimpid      <= 0;
@@ -421,7 +430,6 @@ module M_CSR_Reg_File#(
         begin
             if(i_csr_write_enable)
             begin
-
                 casex(i_csr_write_addr)
                     `REG_MVENDORID_ADDR:   r_mvendorid           <= r_mvendorid;
                     `REG_MARCHID_ADDR:     r_marchid             <= r_marchid;
@@ -469,41 +477,91 @@ module M_CSR_Reg_File#(
                         r_pmpaddr[i_csr_write_addr - `REG_PMPADDR_BASE_ADDR]<=i_csr_data;
                     end
                 end
-                endcase
+                endcase     
             
             end
+            // these don't need csr wr en
+
+             if(i_exception_code_f_d_ff!=`NO_E)
+                    begin
+                        r_mepc<=i_exception_pc_f_d_ff;
+                        r_mstatus[3] <= 0; //mie
+                        r_mstatus[7] <= r_mstatus[3]; //mpie
+                        r_mcause[31]<=0; // type exception
+                        r_mcause[30:0]<=$unsigned(i_exception_code_f_d_ff);
+                        r_mtval<=i_exception_pc_f_d_ff;
+                        r_new_priv<=`MACHINE;
+                        r_mstatus[12:11]<=i_current_privilege; //mpp // might not work
+                    end
+                else if(i_exception_code_e_m_ff!=`NO_E)
+                    begin
+
+                        r_mepc<=i_exception_pc_e_m_ff;
+                        r_mstatus[3] <= 0; //mie
+                        r_mstatus[7] <= r_mstatus[3]; //mpie<=mie
+                        r_mcause[31]<=0; // type exception
+                        r_mcause[30:0]<=$unsigned(i_exception_code_e_m_ff);
+                        r_mtval<=i_exception_addr_e_m_ff;
+                        r_new_priv<=`MACHINE;
+                        r_mstatus[12:11]<=i_current_privilege; //mpp // might not work
+
+                    end
+                else if(i_mret_e) // return from trap
+                    begin
+                        r_mstatus[3] <= r_mstatus[7]; // mie<=mpie
+                        r_mstatus[12:11]<=i_current_privilege; // mpp<=current_priv
+                        r_new_priv<=r_mstatus[12:11]; // current_priv<=mpp
+                    end
         end
     end
 
-    // warl - software can write anythig, but reading is always to a legal value (default case)
-    // wpri - can be written, read is 0
+    reg r_mstatus_mbe;
+    reg r_mstatus_ube;
+    reg [1:0] r_mstatus_uxl;
+    reg r_mstatus_mxr;
+    reg r_mstatus_mprv;
+    reg [1:0] r_mstatus_mpp;
+    reg r_mstatus_mpie;
+    reg r_mstatus_mie;
+    reg [1:0] r_misa_mxl;
 
+    always@(*)
+    begin
+        r_mstatus_ube   = r_mstatus[6];
+        r_mstatus_mxr   = r_mstatus[19];
+        r_mstatus_mprv  = r_mstatus[17];
+        r_mstatus_mpp   = r_mstatus[12:11];
+        r_mstatus_mpie  = r_mstatus[7];
+        r_mstatus_mie   = r_mstatus[3];
+    if(XLEN == `XLEN_64b)
+    begin
+        r_mstatus_mbe   = r_mstatus[37]; 
+        r_mstatus_uxl   = r_mstatus[33:32];
+        r_misa_mxl      = r_misa[63:62];
+    end
+    else
+    begin
+        r_mstatus_mbe   = r_mstatush[5]; 
+        r_mstatus_uxl   = XLEN;
+        r_misa_mxl      = r_misa[31:30];
+    end
+end
 
+// on trap enter:
+// mepc<=pc
+// privilege<=MACHINE
+// mstatus.MPP<=privilege
+// mstatus.MPIE<=mstatus.MIE
+// mstatus.MIE<=0
 
+// on trap exit:
+// pc<=mepc
+// mstatus.mie<=mstatus.mpie
+// mstatus.mpie<=mstatus.mie
+// mstatus.mpp<=privilege
+// privilege<=mstatus.mpp
 
-
-    //         else if(i_exception_code_f_d_ff!=`NO_E)
-    //         begin
-    //             r_csr_regs[(`mepc-12'h300)] <= i_exception_pc_f_d_ff;
-    //             r_csr_regs[`mie-12'h300] <=0;
-    //             r_csr_regs[`mcause-12'h300][31] <=0;
-    //             r_csr_regs[`mcause-12'h300][30:0]<=i_exception_code_f_d_ff;
-    //             r_csr_regs[`mtval-12'h300]<=i_exception_pc_f_d_ff;
-    //         end
-    //         else if(i_exception_code_e_m_ff!=`NO_E)
-    //         begin
-    //             r_csr_regs[`mepc-12'h300] <= i_exception_pc_e_m_ff;
-    //             r_csr_regs[`mie-12'h300] <=0;
-    //             r_csr_regs[`mcause-12'h300][31] <=0;
-    //             r_csr_regs[`mcause-12'h300][30:0]<=i_exception_code_e_m_ff;
-    //             r_csr_regs[`mtval-12'h300]<=i_exception_addr_e_m_ff;
-    //         end
-    //         else if(i_mret_e!=0)
-    //         begin
-    //             r_csr_regs[`mie-12'h300] <=`mie_DEFAULT_VALUE;
-    //         end
-    //     end
-    // end
+            
     
 
 endmodule

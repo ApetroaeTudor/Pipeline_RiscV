@@ -10,13 +10,18 @@ module SoC_Pipe_Reg#(
     input [((1<<(XLEN+4))-1):0] i_mem_addr_e,
     input i_store_byte_e,
     input i_store_half_e,
+    input i_data_rom_en_e,
+    input i_data_ram_en_e,
 
 
     output o_sw_m,
     output [((1<<(XLEN+4))-1):0] o_mem_data_m,
     output [((1<<(XLEN+4))-1):0] o_mem_addr_m,
     output o_store_byte_m,
-    output o_store_half_m
+    output o_store_half_m,
+
+    output o_data_rom_en_m,
+    output o_data_ram_en_m
 );
 
     reg r_sw_m;
@@ -34,6 +39,13 @@ module SoC_Pipe_Reg#(
     reg r_store_half_m;
     assign o_store_half_m = r_store_half_m;
 
+
+    reg r_data_rom_en_m;
+    assign o_data_rom_en_m = r_data_rom_en_m;
+
+    reg r_data_ram_en_m;
+    assign o_data_ram_en_m = r_data_ram_en_m;
+
     always@(posedge i_clk)
     begin
         if(i_rst)
@@ -43,6 +55,8 @@ module SoC_Pipe_Reg#(
             r_mem_addr_m<=0;
             r_store_byte_m<=0;
             r_store_half_m<=0;
+            r_data_ram_en_m<=0;
+            r_data_rom_en_m<=0;
         end
         else if(i_clk_en)
         begin
@@ -51,6 +65,8 @@ module SoC_Pipe_Reg#(
             r_mem_addr_m<=i_mem_addr_e;
             r_store_byte_m<=i_store_byte_e;
             r_store_half_m<=i_store_half_e;
+            r_data_ram_en_m<=i_data_ram_en_e;
+            r_data_rom_en_m<=i_data_rom_en_e;
         end
     end
     

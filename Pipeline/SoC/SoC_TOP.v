@@ -10,7 +10,7 @@ module SoC_TOP#(
     parameter [((1<<(XLEN+4))-1):0] DATA_ROM_START = `ROM_DATA_LO,
     parameter [((1<<(XLEN+4))-1):0] DATA_ROM_END = `ROM_DATA_HI,
     parameter [((1<<(XLEN+4))-1):0] DATA_RAM_START = `GLOBAL_LO,
-    parameter [((1<<(XLEN+4))-1):0] DATA_RAM_END = `STACK_HI,
+    parameter [((1<<(XLEN+4))-1):0] DATA_RAM_END = `M_STACK_HI,
     parameter [((1<<(XLEN+4))-1):0] IO_START = `IO_LO,
     parameter [((1<<(XLEN+4))-1):0] IO_END = `IO_HI
 
@@ -60,6 +60,8 @@ module SoC_TOP#(
     wire [((1<<(XLEN+4))-1):0] w_mem_data_ram_out_m;
 
     wire [((1<<(XLEN+4))-1):0] w_mem_data_selected_m;
+    wire w_data_rom_en_m;
+    wire w_data_ram_en_m;
 
 
 
@@ -132,6 +134,7 @@ module SoC_TOP#(
                                           .o_bad_addr_store_e(w_bad_addr_store_e)
                                          );
 
+    // i need to pipe the enable signals to read/write in memory stage
 
     SoC_Pipe_Reg #(
                     .XLEN(XLEN)
@@ -146,14 +149,20 @@ module SoC_TOP#(
                                         .i_mem_addr_e(w_translated_addr_e),
                                         .i_store_byte_e(w_store_byte_e),
                                         .i_store_half_e(w_store_half_e),
+                                        .i_data_rom_en_e(w_data_rom_en),
+                                        .i_data_ram_en_e(w_data_ram_en),
                                         
 
                                         .o_sw_m(w_sw_m),
                                         .o_mem_data_m(w_mem_data_m),
                                         .o_mem_addr_m(w_mem_addr_m),
                                         .o_store_byte_m(w_store_byte_m),
-                                        .o_store_half_m(w_store_half_m)
+                                        .o_store_half_m(w_store_half_m),
+                                        .o_data_rom_en_m(w_data_rom_en_m),
+                                        .o_data_ram_en_m(w_data_ram_en_m)
                                    );
+
+
 
 
     Mem_Instr_ROM #(
@@ -163,7 +172,7 @@ module SoC_TOP#(
                    )
                    Mem_Instr_ROM_Inst(
                                         .i_rst(i_rst),
-                                        .i_adr(w_fetch_addr_selected_f),
+                                        .i_adr(w_instr_rom_en?w_fetch_addr_selected_f:0),
                                         .o_instr(w_instr_f)
                                      );
 
@@ -174,7 +183,7 @@ module SoC_TOP#(
                   )
                   Mem_Data_ROM_Inst(
                                         .i_rst(i_rst),
-                                        .i_mem_addr(w_mem_addr_m),
+                                        .i_mem_addr(w_data_rom_en_m?w_mem_addr_m:0),
                                         .o_mem_data(w_mem_data_rom_out_m)
                                    );
 
@@ -189,7 +198,7 @@ module SoC_TOP#(
                                         .i_rst(i_rst),
 
                                         .i_mem_write(w_sw_m),
-                                        .i_mem_addr(w_mem_addr_m),
+                                        .i_mem_addr(w_data_ram_en_m?w_mem_addr_m:0),
                                         .i_mem_data(w_mem_data_m),
                                         .i_store_byte(w_store_byte_m),
                                         .i_store_half(w_store_half_m),
@@ -201,8 +210,8 @@ module SoC_TOP#(
     
 
 
-    assign w_mem_data_selected_m = (w_data_rom_en & ~w_data_ram_en)?w_mem_data_rom_out_m:
-                                   (w_data_ram_en & ~w_data_rom_en)?w_mem_data_ram_out_m:0;
+    assign w_mem_data_selected_m = (w_data_rom_en_m & ~w_data_ram_en)?w_mem_data_rom_out_m:
+                                   (w_data_ram_en_m & ~w_data_rom_en)?w_mem_data_ram_out_m:0;
 
 
     assign w_fetch_addr_selected_f = (w_instr_rom_en)?w_fetch_addr_translated_f:0;

@@ -14,7 +14,7 @@ localparam INSTR_ROM_END = `TEXT_HI;
 localparam DATA_ROM_START = `ROM_DATA_LO;
 localparam DATA_ROM_END = `ROM_DATA_HI;
 localparam DATA_RAM_START = `GLOBAL_LO;
-localparam DATA_RAM_END = `STACK_HI;
+localparam DATA_RAM_END = `M_STACK_HI;
 localparam IO_START = `IO_LO;
 localparam IO_END = `IO_HI;
 
@@ -48,6 +48,7 @@ always #5 t_r_clk = ~t_r_clk;
 always #100 t_r_probe_clk = ~t_r_probe_clk;
 
 `define dmem_ram SoC_TOP_DUT.Mem_Data_RAM_Inst.r_mem_data
+
 `define dmem_rom SoC_TOP_DUT.Mem_Data_ROM_Inst.r_mem_data
 
 `define regs SoC_TOP_DUT.Core_Inst.Data_Path_Inst.Reg_File_Inst.r_registers
@@ -68,10 +69,10 @@ task dump_mem;
         for(i=start_addr;i<end_addr;i=i+4)
         begin
             $fdisplay(fd_mem_dump,"mem[%04h] = %h_%h_%h_%h",i,
-            `dmem_rom[i+3],
-            `dmem_rom[i+2],
-            `dmem_rom[i+1],
-            `dmem_rom[i]);
+            `dmem_ram[i+3],
+            `dmem_ram[i+2],
+            `dmem_ram[i+1],
+            `dmem_ram[i]);
         end
     end
 
@@ -175,7 +176,7 @@ always@(posedge t_r_probe_clk)
 begin
     dump_regs();
     dump_csr_regs();
-    dump_mem(`GLOBAL_LO - 32'h100000, `GLOBAL_LO+128 - 32'h100000);
+    dump_mem(0,100);
 end
 
 initial

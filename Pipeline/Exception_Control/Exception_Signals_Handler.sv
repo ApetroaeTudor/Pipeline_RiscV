@@ -27,6 +27,8 @@ module Exception_Signals_Handler#(
     input i_bad_addr_load_e,
     input i_bad_addr_store_e,
 
+    input i_disable_exceptions_1cc,
+
     output [3:0] o_exception_code_f, 
     output [3:0] o_exception_code_e
 );
@@ -87,12 +89,15 @@ wire w_store_addr_misaligned_2b = (i_mem_write_e) &&
 
 
 
-assign o_exception_code_f = (w_fetch_misaligned)?`E_FETCH_ADDR_MISALIGNED:
+assign o_exception_code_f = i_disable_exceptions_1cc?`NO_E:
+                            (w_fetch_misaligned)?`E_FETCH_ADDR_MISALIGNED:
                             (w_illegal_opcode || w_illegal_csr_instr || i_bad_addr_f)?`E_ILLEGAL_INSTR:
-                            (i_current_privilege!=`MACHINE && r_final_pmp_exc_f == `E_ILLEGAL_INSTR)?`E_ILLEGAL_INSTR:
+                            ((i_current_privilege!=`MACHINE && r_final_pmp_exc_f == `E_ILLEGAL_INSTR) ||
+                             (i_current_privilege!=`MACHINE && r_final_pmp_exc_e == `E_ILLEGAL_INSTR))?`E_ILLEGAL_INSTR:
                             `NO_E;
 
-assign o_exception_code_e = (w_load_addr_misaligned_2b | w_load_addr_misaligned_4b)?`E_LOAD_ADDR_MISALIGNED:
+assign o_exception_code_e = i_disable_exceptions_1cc?`NO_E:
+                            (w_load_addr_misaligned_2b | w_load_addr_misaligned_4b)?`E_LOAD_ADDR_MISALIGNED:
                             ( (i_current_privilege!=`MACHINE && r_final_pmp_exc_e == `E_LOAD_ACCESS_FAULT) || i_bad_addr_load_e)?`E_LOAD_ACCESS_FAULT:
                             (w_store_addr_misaligned_2b | w_store_addr_misaligned_4b)?`E_STORE_ADDR_MISALIGNED:
                             ( (i_current_privilege!=`MACHINE && r_final_pmp_exc_e == `E_STORE_ACCESS_FAULT)|| i_bad_addr_store_e)?`E_STORE_ACCESS_FAULT:
@@ -247,7 +252,7 @@ function [4:0] tor;
     end
     else // ex
     begin
-      if((i_addr_to_check >= (i_pmpaddr_prev<<2)) && (i_addr_to_check<(i_pmpaddr_current<<2)))
+      if((i_addr_to_check >= (i_pmpaddr_prev<<2)) && (i_addr_to_check<(i_pmpaddr_current<<2))  )
       begin
           tor[4] = 1'b1;
           casex({i_lw,i_sw})

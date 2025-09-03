@@ -102,13 +102,16 @@ module Data_Path#(
     // for mem management
     output [((1<<(XLEN+4))-1):0] o_mem_data_e, //
     input [((1<<(XLEN+4))-1):0] i_mem_data_m, 
-    input [31:0] i_instr_f //
+    input [31:0] i_instr_f, //
 
 
 
     // input i_bad_addr_f, // prob nu am nevoie de ele aici
     // input i_bad_addr_load_e,
     // input i_bad_addr_store_e
+
+
+    output o_disable_exceptions_1cc
 
 );
 
@@ -258,7 +261,20 @@ module Data_Path#(
     always@(*)
     begin
         if(i_rst) r_privilege = `MACHINE;
-        else r_privilege = r_new_priv;
+        // else r_privilege = r_new_priv;
+        else
+        begin
+            if(r_exception_code_f_d_ff!=`NO_E)
+            begin
+                r_privilege = `MACHINE;
+            end
+            else if(r_exception_code_e_m_ff!=`NO_E)
+            begin
+                r_privilege = `MACHINE;
+            end
+            else 
+            r_privilege = r_new_priv;
+        end
     end
 
     always @(posedge i_clk or posedge i_rst) 
@@ -423,9 +439,15 @@ module Data_Path#(
                     .i_csr_write_addr_w(w_csr_rd_w),
                     .i_csr_write_enable_w(w_csr_reg_write_w),
 
-                    .i_exception_code_f_d_ff(r_exception_code_f_d_ff),
+                    // .i_exception_code_f_d_ff(r_exception_code_f_d_ff),
+                    // .i_exception_pc_f_d_ff(r_exception_pc_f_d_ff),
+                    // .i_exception_code_e_m_ff(r_exception_code_e_m_ff),
+                    // .i_exception_pc_e_m_ff(r_exception_pc_e_m_ff),
+                    // .i_exception_addr_e_m_ff(r_exception_addr_e_m_ff),
+
+                    .i_exception_code_f_d_ff(w_exception_code_f),
                     .i_exception_pc_f_d_ff(r_exception_pc_f_d_ff),
-                    .i_exception_code_e_m_ff(r_exception_code_e_m_ff),
+                    .i_exception_code_e_m_ff(w_exception_code_e),
                     .i_exception_pc_e_m_ff(r_exception_pc_e_m_ff),
                     .i_exception_addr_e_m_ff(r_exception_addr_e_m_ff),
 
@@ -445,7 +467,8 @@ module Data_Path#(
                     .o_concat_pmpaddr(w_concat_pmpaddr_d),
                     .o_concat_pmpcfg(w_concat_pmpcfg_d),
                     .o_UXL(w_UXL_d),
-                    .o_new_priv(r_new_priv)  
+                    .o_new_priv(r_new_priv),
+                    .o_disable_exceptions_1cc(o_disable_exceptions_1cc)  
                 );
 
 
@@ -551,7 +574,7 @@ module Data_Path#(
 
     // EX ------------------------------------------------------------
 
-    assign o_res_src_b0_e = w_result_src_e[0];
+    assign o_res_src_b0_e = (w_result_src_e==2'b01); // workaround because i used 2'b11 for "don't use the result in wb"
     assign o_pc_src_e = w_pc_src_e;
     assign w_pc_target_branch_or_jal_e = w_pc_e + w_imm_32b_e;
 

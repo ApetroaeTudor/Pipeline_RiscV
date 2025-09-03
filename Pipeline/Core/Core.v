@@ -44,6 +44,9 @@ module Core#(
     assign o_sw_e = w_mem_write_e;
 
 
+    wire w_disable_exceptions_1cc;
+
+
 
   
     // exception signals gen
@@ -213,7 +216,9 @@ module Core#(
                              .o_mem_data_e(o_mem_data_e),
                              .i_mem_data_m(i_mem_data_m),
 
-                             .i_instr_f(i_instr_f)
+                             .i_instr_f(i_instr_f),
+
+                             .o_disable_exceptions_1cc(w_disable_exceptions_1cc)
                              );
 
 
@@ -238,6 +243,7 @@ module Core#(
         .i_bad_addr_store_e(i_bad_addr_store_e),
         .i_concat_pmpaddr(w_concat_pmpaddr),
         .i_concat_pmpcfg(w_concat_pmpcfg),
+        .i_disable_exceptions_1cc(w_disable_exceptions_1cc),
         .o_exception_code_f(w_exception_code_f),
         .o_exception_code_e(w_exception_code_e)
     );

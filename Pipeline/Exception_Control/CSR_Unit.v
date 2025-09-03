@@ -38,7 +38,9 @@ module CSR_Unit#(
 
     output [1:0] o_UXL,
 
-    output [1:0] o_new_priv
+    output [1:0] o_new_priv,
+
+    output o_disable_exceptions_1cc
 );
 
     wire [6:0] w_opcode_d = i_instr_d[6:0];
@@ -109,7 +111,8 @@ module CSR_Unit#(
                         .o_concat_pmpaddr(o_concat_pmpaddr),
                         .o_concat_pmpcfg(o_concat_pmpcfg),
                         .o_UXL(o_UXL),
-                        .o_new_priv(o_new_priv)
+                        .o_new_priv(o_new_priv),
+                        .o_disable_exceptions_1cc(o_disable_exceptions_1cc)
                     );
 
 

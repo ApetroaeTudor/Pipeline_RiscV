@@ -32,31 +32,31 @@
 
 // mapped mem addresses 
 // instr mem
-  `define TRAP_LO 32'h0000_0000
+  `define TRAP_LO 32'h0000_0000 //---
   `define TRAP_HI 32'h0000_7FFF
 
-  `define RESET_LO 32'h0000_8000
+  `define RESET_LO 32'h0000_8000 //---
   `define RESET_HI 32'h0000_FFFF
 
-  `define TEXT_LO 32'h0001_0000
+  `define TEXT_LO 32'h0001_0000 //--x
   `define TEXT_HI 32'h0003_DFFF
 
-  `define ROM_DATA_LO 32'h0003_E000
+  `define ROM_DATA_LO 32'h0003_E000 //r--
   `define ROM_DATA_HI 32'h0003_FFFF
 // data mem
-  `define GLOBAL_LO 32'h0004_0000
+  `define GLOBAL_LO 32'h0004_0000 //rw-
   `define GLOBAL_HI 32'h0004_1FFF
 
-  `define DYNAMIC_LO 32'h0004_2000
+  `define DYNAMIC_LO 32'h0004_2000 //rw-
   `define DYNAMIC_HI 32'h0004_3FFF
 
-  `define STACK_LO 32'h0004_4000
+  `define STACK_LO 32'h0004_4000 //rw-
   `define STACK_HI 32'h0004_5fff
 
-  `define M_STACK_LO 32'h0004_4000
-  `define M_STACK_HI 32'h0004_7FFF
+  `define M_STACK_LO 32'h0004_4000 //---
+  `define M_STACK_HI 32'h0004_7FFF 
 
-  `define IO_LO 32'h0004_8000
+  `define IO_LO 32'h0004_8000 //---
   `define IO_HI 32'h0004_9FFF
 
 // alu control

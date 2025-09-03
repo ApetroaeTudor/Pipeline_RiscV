@@ -1,25 +1,78 @@
 @00000000 // trap vector lo
-34011173  //csrrw sp,mscratch, sp; 
-fec10113  //addi sp,sp,-20; 
-00512023  //sw t0,0(sp); 
-00612223  //sw t1,4(sp); 
-00712423  //sw t2,8(sp); 
-01c12623  //sw t3,12(sp); 
-01d12823  //sw t4,16(sp); 
-341e9ef3  //csrrw t4,mepc,t4; 
-004e8e93  //addi t4,t4,4; 
-341e9ef3  //csrrw t4,mepc,t4; 
-00012283  //lw t0,0(sp); 
-00412303  //lw t1,4(sp); 
-00812383  //lw t2,8(sp); 
-00c12e03  //lw t3,12(sp); 
-01012e83  //lw t4,16(sp); 
-01410113  //addi sp,sp,20; 
-34011173  //csrr sp,mscratch,sp; 
-30200073  //mret; 
+34011173 //0000 0000 csrrw sp,mscratch,sp  
+fec10113 //0000 0004 addi sp,sp,-20
+00512023 //0000 0008 sw t0,0(sp)
+00612223 //0000 000c sw t1,4(sp)
+00712423 //0000 0010 sw t2,8(sp)
+01c12623 //0000 0014 sw t3,12(sp) 
+01d12823 //0000 0018 sw t4,16(sp)
+
+341e9ef3 //0000 001c csrrw t4,mepc,t4
+004e8e93 //0000 0020 addi t4,t4,4
+341e9ef3 //0000 0024 csrrw t4,mepc,t4
+
+09800313 //0000 0028 addi t1,x0,0x098
+
+342022f3 //0000 002c csrrs t0,mcause,x0
+00000393 //0000 0030 addi t2,x0,x0 
+
+
+00729463 //0000 0034 bne t0,t2,8 // fetch addr mis
+00030067 //0000 0038 jalr x0,0(t1)
+00238393 //0000 003c addi t2,t2,2
+
+00729463 //0000 0040 bne t0,t2,8 // illegal instr
+00030067 //0000 0044 jalr x0,0(t1)
+00238393 //0000 0048 addi t2,t2,2
+
+00729463 //0000 004c bne t0,t2,8 //load_addr_misaligned
+00030067 //0000 0050 jalr x0,0(t1)
+00138393 //0000 0054 addi t2,t2,1
+
+00729463 //0000 0058 bne t0,t2,8 //load_addr_fault
+00030067 //0000 005c jalr x0,0(t1)
+00138393 //0000 0060 addi t2,t2,1
+
+00729463 //0000 0064 bne t0,t2,8 //store_addr_misaligned
+00030067 //0000 0068 jalr x0,0(t1)
+00138393 //0000 006c addi t2,t2,1 
+
+00729463 //0000 0070 bne t0,t2,8 //store_addr_fault
+00030067 //0000 0074 jalr x0,0(t1)
+
+
+
+00012283 //0000 0078 lw t0,0(sp)
+00412303 //0000 007c lw t1,4(sp)
+00812383 //0000 0080 lw t2,8(sp)
+00c12e03 //0000 0084 lw t3,12(sp) 
+01012e83 //0000 0088 lw t4,16(sp) 
+01410113 //0000 008c addi sp,sp,20
+34011173 //0000 0090 csrrw sp,mscratch,sp
+30200073 //0000 0094 mret
+
+
+00000063 //0000 0098 beq x0,x0,0
+
+
+
+
+
+
+
+
+
+
 
 
 @00002000 // reset vector lo // 8000 >>2
+
+
+
+
+// MSCRATCH M_STACK_HI+1 = 0004 8000
+000482b7//lui x5,0x00048
+34029073//csrrw x0,mscratch,x5
 
 // MSTATUS 000000A0 0000 08A0
 008a02b7//lui x5, 0x08a0 -> 08a0 0000
@@ -106,19 +159,26 @@ b8b00337//lui x6,0xB8B00 -> B8B0 0000
 
 
 
+
+
+
+
+
+
+
+
 @00004000 // text lo // 10000 >>2 
 
-000bfeb7 //lui x29,0x000bf // success // t4                 ->> m
-00100e37 //lui x28,0x00100 // start of datamem //t3         ->> m
 
+// t3 0004 0000 -> ramdata low
+// t4 0003 D000 -> success
+// t5 0003 B000 -> fail
 
-0f000f13 // addi t5,x0,0xf0
-01ee0023 // sb t5,0(t3)
-00000f13 // addi t5,x0,0
-000e4f03 // lbu t5,0(t3)
-004f1f13 // slli t5,t5,4
-000bf2b7 // lui t0,0x000bf 
-005f6f33 // or t5,t5,t0 // fail
+00040e37// lui t3, 0x00040
+
+0003deb7// lui t4, 0x0003d -> 0003 d000
+0003bf37// lui t5,0x0003b -> 0003 b000
+
 
 
 
@@ -143,6 +203,7 @@ b8b00337//lui x6,0xB8B00 -> B8B0 0000
 00628463 //beq t0,t1, 8
 000f0067 //jalr x0,0(t5) // fail
 
+00000073 // ecall
 
 
 // Test SLLI
@@ -408,10 +469,12 @@ fff00293
 000e8067 //jalr x0,0(t4) // success
 
 
-@0002ffc0// 000bff00 // fail
+@0003FC0
+
+@0000ec00// 0003 B000 >>2 // fail
 00100f93 //addi x31,x0,0x1
 00000063 //beq x0,x0,0
 
-@0002fc00// 000bf000 // success
+@0000f400// 0003 D000 // success
 00200f93 //addi x31,x0,0x2
 00000063 //beq x0,x0,0

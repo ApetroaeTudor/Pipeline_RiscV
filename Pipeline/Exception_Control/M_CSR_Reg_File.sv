@@ -32,9 +32,12 @@ module M_CSR_Reg_File#(
 
     output [1:0] o_UXL,
 
-    output [1:0] o_new_priv
+    output [1:0] o_new_priv,
+
+    output o_disable_exceptions_1cc
 
 );
+    reg r_disable_exceptions_1cc;
 
     reg [1:0] r_new_priv;
     assign o_new_priv = r_new_priv;
@@ -508,10 +511,14 @@ module M_CSR_Reg_File#(
                     end
                 else if(i_mret_e) // return from trap
                     begin
+                        r_disable_exceptions_1cc<=1'b1;
                         r_mstatus[3] <= r_mstatus[7]; // mie<=mpie
                         r_mstatus[12:11]<=i_current_privilege; // mpp<=current_priv
                         r_new_priv<=r_mstatus[12:11]; // current_priv<=mpp
                     end
+
+                if(!i_mret_e) r_disable_exceptions_1cc<=1'b0;
+                
         end
     end
 

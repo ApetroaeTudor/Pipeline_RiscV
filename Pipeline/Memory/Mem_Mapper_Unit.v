@@ -6,7 +6,7 @@ module Mem_Mapper_Unit#(
     parameter [((1<<(XLEN+4))-1):0] DATA_ROM_START = `ROM_DATA_LO,
     parameter [((1<<(XLEN+4))-1):0] DATA_ROM_END = `ROM_DATA_HI,
     parameter [((1<<(XLEN+4))-1):0] DATA_RAM_START = `GLOBAL_LO,
-    parameter [((1<<(XLEN+4))-1):0] DATA_RAM_END = `STACK_HI,
+    parameter [((1<<(XLEN+4))-1):0] DATA_RAM_END = `M_STACK_HI,
     parameter [((1<<(XLEN+4))-1):0] IO_START = `IO_LO,
     parameter [((1<<(XLEN+4))-1):0] IO_END = `IO_HI
 )(

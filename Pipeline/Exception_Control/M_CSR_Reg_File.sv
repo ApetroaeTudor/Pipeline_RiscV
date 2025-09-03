@@ -38,6 +38,7 @@ module M_CSR_Reg_File#(
 
 );
     reg r_disable_exceptions_1cc;
+    assign o_disable_exceptions_1cc = r_disable_exceptions_1cc;
 
     reg [1:0] r_new_priv;
     assign o_new_priv = r_new_priv;

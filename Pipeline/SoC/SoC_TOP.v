@@ -190,7 +190,7 @@ module SoC_TOP#(
     Mem_Data_RAM #(
                         .XLEN(XLEN),
                         .WIDTH(DATA_UNIT),
-                        .DEPTH(`STACK_HI-`GLOBAL_LO+1)
+                        .DEPTH(`M_STACK_HI-`GLOBAL_LO+1)
                   )
                   Mem_Data_RAM_Inst(
                                         .i_clk(i_clk),

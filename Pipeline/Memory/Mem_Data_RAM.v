@@ -2,7 +2,7 @@
 module Mem_Data_RAM#(
     parameter [1:0] XLEN = `XLEN_64b,
     parameter WIDTH = 8,
-    parameter DEPTH = `STACK_HI - `GLOBAL_LO + 1 
+    parameter DEPTH = `M_STACK_HI - `GLOBAL_LO + 1 
 )(
     input i_clk,
     input i_clk_en,

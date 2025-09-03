@@ -170,14 +170,27 @@ b8b00337//lui x6,0xB8B00 -> B8B0 0000
 @00004000 // text lo // 10000 >>2 
 
 
+
+
+
 // t3 0004 0000 -> ramdata low
 // t4 0003 D000 -> success
 // t5 0003 B000 -> fail
+
+
 
 00040e37// lui t3, 0x00040
 
 0003deb7// lui t4, 0x0003d -> 0003 d000
 0003bf37// lui t5,0x0003b -> 0003 b000
+
+
+// STORE INTO IO EXCEPTION TEST
+000482b7// lui x5,0x00048  0004_8000
+00c28293// addi x5,x5,12
+01e2a023// sw t5,0(x5)
+
+
 
 
 
@@ -203,7 +216,6 @@ b8b00337//lui x6,0xB8B00 -> B8B0 0000
 00628463 //beq t0,t1, 8
 000f0067 //jalr x0,0(t5) // fail
 
-00000073 // ecall
 
 
 // Test SLLI
@@ -475,6 +487,8 @@ fff00293
 00100f93 //addi x31,x0,0x1
 00000063 //beq x0,x0,0
 
+
 @0000f400// 0003 D000 // success
+
 00200f93 //addi x31,x0,0x2
 00000063 //beq x0,x0,0

@@ -439,17 +439,13 @@ module Data_Path#(
                     .i_csr_write_addr_w(w_csr_rd_w),
                     .i_csr_write_enable_w(w_csr_reg_write_w),
 
-                    // .i_exception_code_f_d_ff(r_exception_code_f_d_ff),
-                    // .i_exception_pc_f_d_ff(r_exception_pc_f_d_ff),
-                    // .i_exception_code_e_m_ff(r_exception_code_e_m_ff),
-                    // .i_exception_pc_e_m_ff(r_exception_pc_e_m_ff),
-                    // .i_exception_addr_e_m_ff(r_exception_addr_e_m_ff),
-
                     .i_exception_code_f_d_ff(w_exception_code_f),
-                    .i_exception_pc_f_d_ff(r_exception_pc_f_d_ff),
                     .i_exception_code_e_m_ff(w_exception_code_e),
-                    .i_exception_pc_e_m_ff(r_exception_pc_e_m_ff),
-                    .i_exception_addr_e_m_ff(r_exception_addr_e_m_ff),
+                    
+
+                    .i_exception_pc_f_d_ff(r_exception_pc_f),                    
+                    .i_exception_pc_e_m_ff(r_exception_pc_e),
+                    .i_exception_addr_e_m_ff(r_exception_addr_e),
 
                     .i_mret_e(w_mret_e),
                     .i_csr_data_w(w_new_csr_w),

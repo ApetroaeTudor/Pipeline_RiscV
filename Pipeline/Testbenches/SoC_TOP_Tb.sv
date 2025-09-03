@@ -176,7 +176,7 @@ always@(posedge t_r_probe_clk)
 begin
     dump_regs();
     dump_csr_regs();
-    dump_mem(0,100);
+    dump_mem(32748,32767);
 end
 
 initial

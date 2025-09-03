@@ -9,7 +9,7 @@ module Mem_Instr_ROM#(
     output [31:0] o_instr
 );
 
-    localparam LOAD_FILE = (XLEN==`XLEN_32b)?"./Mem_Files/instructions_32b.mem":"./Mem_Files/instructions_64b.mem";
+    localparam LOAD_FILE = (XLEN==`XLEN_32b)?"Mem_Files/instructions_32b.mem":"./Mem_Files/instructions_64b.mem";
     reg [WIDTH-1:0] r_mem_instr [DEPTH-1:0];
 
     assign {o_instr[`byte_3] , o_instr[`byte_2] , o_instr[`byte_1] , o_instr[`byte_0]} = 
@@ -28,7 +28,7 @@ module Mem_Instr_ROM#(
                 r_mem_instr[i] = 0;
                 temp_mem[i] = 0;
             end
-            $readmemh(LOAD_FILE,temp_mem);
+            $readmemh("Mem_Files/instructions_32b.mem",temp_mem);
 
 
             for(i=0; i< DEPTH<<2; i = i+1)

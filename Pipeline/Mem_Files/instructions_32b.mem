@@ -172,7 +172,6 @@ b8b00337//lui x6,0xB8B00 -> B8B0 0000
 
 
 
-
 // t3 0004 0000 -> ramdata low
 // t4 0003 D000 -> success
 // t5 0003 B000 -> fail
@@ -185,14 +184,8 @@ b8b00337//lui x6,0xB8B00 -> B8B0 0000
 0003bf37// lui t5,0x0003b -> 0003 b000
 
 
-// STORE INTO IO EXCEPTION TEST
-000482b7// lui x5,0x00048  0004_8000
-00c28293// addi x5,x5,12
-01e2a023// sw t5,0(x5)
 
-
-
-
+00000073 // ecall
 
 
 12345337 //lui t1,0x12345 

@@ -53,7 +53,7 @@
   `define STACK_LO 32'h0004_4000 //rw-
   `define STACK_HI 32'h0004_5fff
 
-  `define M_STACK_LO 32'h0004_4000 //---
+  `define M_STACK_LO 32'h0004_6000 //---
   `define M_STACK_HI 32'h0004_7FFF 
 
   `define IO_LO 32'h0004_8000 //---

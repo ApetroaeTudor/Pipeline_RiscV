@@ -27,7 +27,6 @@ module Exception_Signals_Handler#(
     input i_bad_addr_load_e,
     input i_bad_addr_store_e,
 
-    input i_disable_exceptions_1cc,
 
     output [3:0] o_exception_code_f, 
     output [3:0] o_exception_code_e
@@ -36,8 +35,9 @@ module Exception_Signals_Handler#(
 localparam PMPCFG_LEN = 8;
 localparam PMPADDR_LEN = (1<<(XLEN+4));
 
-wire [PMPADDR_LEN-1:0] w_pmpcfg_regs  [63:0];
+wire [7:0] w_pmpcfg_regs  [63:0];
 wire [PMPADDR_LEN-1:0] w_pmpaddr_regs [63:0];
+
 
 genvar i;
 generate
@@ -46,6 +46,8 @@ generate
     assign w_pmpcfg_regs[i] = i_concat_pmpcfg[((i+1)*PMPCFG_LEN)-1:i*PMPCFG_LEN];
     assign w_pmpaddr_regs[i]= i_concat_pmpaddr[((i+1)*PMPADDR_LEN)-1:i*PMPADDR_LEN];
   end
+
+
 endgenerate
 
 
@@ -89,39 +91,20 @@ wire w_store_addr_misaligned_2b = (i_mem_write_e) &&
 
 
 
-assign o_exception_code_f = /*i_disable_exceptions_1cc?`NO_E:*/
-                            (w_fetch_misaligned)?`E_FETCH_ADDR_MISALIGNED:
+assign o_exception_code_f = (w_fetch_misaligned)?`E_FETCH_ADDR_MISALIGNED:
                             (w_illegal_opcode || w_illegal_csr_instr || i_bad_addr_f)?`E_ILLEGAL_INSTR:
                             ((i_current_privilege!=`MACHINE && r_pmp_exception_f == `E_ILLEGAL_INSTR) ||
                              (i_current_privilege!=`MACHINE && r_pmp_exception_e == `E_ILLEGAL_INSTR))?`E_ILLEGAL_INSTR:
                             `NO_E;
+                            
 
-assign o_exception_code_e = /*i_disable_exceptions_1cc?`NO_E:*/
-                            (w_load_addr_misaligned_2b | w_load_addr_misaligned_4b)?`E_LOAD_ADDR_MISALIGNED:
+assign o_exception_code_e = (w_load_addr_misaligned_2b | w_load_addr_misaligned_4b)?`E_LOAD_ADDR_MISALIGNED:
                             ( (i_current_privilege!=`MACHINE && r_pmp_exception_e == `E_LOAD_ACCESS_FAULT) || i_bad_addr_load_e)?`E_LOAD_ACCESS_FAULT:
                             (w_store_addr_misaligned_2b | w_store_addr_misaligned_4b)?`E_STORE_ADDR_MISALIGNED:
                             ( (i_current_privilege!=`MACHINE && r_pmp_exception_e == `E_STORE_ACCESS_FAULT)|| i_bad_addr_store_e)?`E_STORE_ACCESS_FAULT:
                             (i_ecall_e)?`E_ECALL:
                             `NO_E;
-
-
-
-
-wire [31:0] w_pmpaddr_0 = w_pmpaddr_regs[0]<<2;
-wire [31:0] w_pmpaddr_1 = w_pmpaddr_regs[1]<<2;
-wire [31:0] w_pmpaddr_2 = w_pmpaddr_regs[2]<<2;
-wire [31:0] w_pmpaddr_3 = w_pmpaddr_regs[3]<<2;
-
-
-wire [7:0] w_pmpcfg_0 = w_pmpcfg_regs[0];
-wire [7:0] w_pmpcfg_1 = w_pmpcfg_regs[1];
-wire [7:0] w_pmpcfg_2 = w_pmpcfg_regs[2];
-wire [7:0] w_pmpcfg_3 = w_pmpcfg_regs[3];
-
-wire w_pc_in_txt = i_pc_f >=w_pmpaddr_1 && i_pc_f<w_pmpaddr_2; //current is 2
-wire [1:0] w_a_in_txt = w_pmpcfg_2[4:3]; 
-wire w_x_in_txt = w_pmpcfg_2[2];
-
+                            
 
 
 
@@ -137,10 +120,8 @@ localparam TOR = 2'b01;
 localparam NA4 = 2'b10;
 localparam NAPOT = 2'b11;
 reg [((1<<(XLEN+4))-1):0] r_addr_cpy = 0;
-wire w_addr_cpy_lsb = r_addr_cpy[0];
-reg [7:0] r_sz =0;
-
-
+reg r_addr_cpy_lsb = r_addr_cpy[0];
+reg [31:0] r_sz =0;
 
 
 reg [3:0] r_pmp_exception_f = {1'b0,`NO_E};
@@ -155,6 +136,7 @@ reg r_is_match = 1'b0;
 
 always@(*)
 begin
+  
   r_any_match_f = 1'b0;
   r_any_match_e = 1'b0;
 
@@ -170,6 +152,9 @@ begin
         r_r = w_pmpcfg_regs[j][0];
         r_w = w_pmpcfg_regs[j][1];
         r_x = w_pmpcfg_regs[j][2];
+        r_addr_cpy = 0;
+        r_addr_cpy_lsb = 0;
+        r_sz = 0;
         casex(r_A)
         TOR:begin
              if(!r_any_match_f)
@@ -203,9 +188,69 @@ begin
              end
         end
         NA4:begin
+          if(!r_any_match_f)
+          begin
+            r_is_match = ((i_pc_f >=(w_pmpaddr_regs[j]<<2)) && (i_pc_f<((w_pmpaddr_regs[j]<<2)+4)));
+            if(r_is_match)
+            begin
+              r_any_match_f = 1'b1;
+              if(!r_x) r_pmp_exception_f = `E_ILLEGAL_INSTR;
+            end
+          end
+          if(!r_any_match_e)
+          begin
+            r_is_match = ((i_alu_out_e >=(w_pmpaddr_regs[j]<<2)) && (i_alu_out_e<((w_pmpaddr_regs[j]<<2)+4)));
+            if(r_is_match)
+            begin
+              r_any_match_e = 1'b1;
+              if(i_res_src_b0_e)
+              begin
+                if(!r_r) r_pmp_exception_e = `E_LOAD_ACCESS_FAULT;
+              end
+              if(i_mem_write_e)
+              begin
+                if(!r_w) r_pmp_exception_e = `E_STORE_ACCESS_FAULT;
+              end
+            end
+          end
            
         end
         NAPOT:begin
+          r_addr_cpy = w_pmpaddr_regs[j];
+          for( k=0 ; k < (1<<(XLEN+4)) ; k=k+1 )
+          begin
+            r_addr_cpy_lsb = r_addr_cpy[0];
+            if(r_addr_cpy_lsb) r_sz = r_sz+1;
+            r_addr_cpy = r_addr_cpy >>1;
+          end
+          r_sz = 1<<(r_sz+3);
+
+          if(!r_any_match_f)
+          begin
+            r_is_match = ( (i_pc_f>=( (w_pmpaddr_regs[j]<<2) & ~(r_sz-1))) && (i_pc_f <(( (w_pmpaddr_regs[j]<<2) & ~(r_sz-1))+r_sz) ) );
+            if(r_is_match)
+            begin
+              r_any_match_f = 1'b1;
+              if(!r_x) r_pmp_exception_f = `E_ILLEGAL_INSTR;
+            end
+          end
+          if(!r_any_match_e)
+          begin
+            r_is_match = ( (i_alu_out_e>=( (w_pmpaddr_regs[j]<<2) & ~(r_sz-1))) && (i_alu_out_e <(( (w_pmpaddr_regs[j]<<2) & ~(r_sz-1))+r_sz) ) );
+            if(r_is_match)
+            begin
+              r_any_match_e = 1'b1;
+              if(i_res_src_b0_e)
+              begin
+                if(!r_r) r_pmp_exception_e = `E_LOAD_ACCESS_FAULT;
+              end
+              if(i_mem_write_e)
+              begin
+                if(!r_w) r_pmp_exception_e = `E_STORE_ACCESS_FAULT;
+              end
+            end
+          end
+
 
         end
         default:begin
@@ -215,7 +260,7 @@ begin
             end
             if(!r_any_match_e)
             begin
-              r_pmp_exception_e = `E_ILLEGAL_INSTR;
+              r_pmp_exception_e = (i_res_src_b0_e | i_mem_write_e)?`E_ILLEGAL_INSTR:`NO_E;
             end
         end
         endcase
@@ -230,7 +275,7 @@ begin
     end
     if(!r_any_match_e)
     begin
-      r_pmp_exception_e = `E_ILLEGAL_INSTR;
+      r_pmp_exception_e = (i_res_src_b0_e | i_mem_write_e)?`E_ILLEGAL_INSTR:`NO_E;
     end
 
   end
@@ -241,137 +286,6 @@ begin
   end 
 
 end
-
-
-
-function [4:0] tor;
-  input [((1<<(XLEN+4))-1):0] i_addr_to_check;
-  input i_f_or_e; // 1  is f, 0 is e;
-  input i_r;
-  input i_w;
-  input i_x;
-  input i_lw;
-  input i_sw;
-  
-
-  input [((1<<(XLEN+4))-1):0] i_pmpaddr_current;
-  input [((1<<(XLEN+4))-1):0] i_pmpaddr_prev;
-
-
-  begin
-    if(i_f_or_e) // fetch
-    begin
-      if((i_addr_to_check >= (i_pmpaddr_prev<<2)) && (i_addr_to_check<(i_pmpaddr_current<<2)))
-      begin
-        tor[4] = 1'b1;
-        tor[3:0] = (i_x)?`NO_E:`E_ILLEGAL_INSTR;
-      end
-      else
-      begin
-        tor[4] = 1'b0;
-        tor[3:0] = `NO_E;
-      end
-    end
-    else // ex
-    begin
-      if((i_addr_to_check >= (i_pmpaddr_prev<<2)) && (i_addr_to_check<(i_pmpaddr_current<<2))  )
-      begin
-          casex({i_lw,i_sw})
-          2'b01: // store needs w
-          begin
-            tor[4] = 1'b1;
-            tor[3:0] = (i_w)?`NO_E:`E_STORE_ACCESS_FAULT; 
-          end
-          2'b10: // loads needs r
-          begin
-            tor[4] = 1'b1;
-            tor[3:0] = (i_r)?`NO_E:`E_LOAD_ACCESS_FAULT;
-          end
-          default: begin
-            tor[4] = 1'b1;
-            tor[3:0] = `NO_E;
-          end
-          endcase
-      end
-      else
-      begin
-        tor[4] = 1'b0;
-        tor[3:0] = `NO_E;
-      end
-      
-    end
-
-  end
-endfunction
-
-
-
-function [4:0] na4; // msb is 1 if addr match was found, 0 if not
-  input [((1<<(XLEN+4))-1):0] i_pc_f;
-  input [((1<<(XLEN+4))-1):0] i_alu_out_e;
-  input i_r;
-  input i_w;
-  input i_x;
-  input i_res_src_b0_e;
-  input i_mem_write_e;
-
-  input [((1<<(XLEN+4))-1):0] i_pmpaddr_current;
-
-  begin
-    if(i_pc_f >= (i_pmpaddr_current<<2) && (i_pc_f<((i_pmpaddr_current<<2)+4)) )
-    begin
-      if(!i_x) na4[3:0] = `E_ILLEGAL_INSTR;
-    end
-    else if (i_res_src_b0_e && ( i_alu_out_e >= (i_pmpaddr_current<<2) && (i_alu_out_e<((i_pmpaddr_current<<2)+4)) ) )  
-    begin
-      if(!i_r) na4[3:0] = `E_LOAD_ACCESS_FAULT;
-    end
-    else if(i_mem_write_e && ( i_alu_out_e >= (i_pmpaddr_current<<2) && (i_alu_out_e<((i_pmpaddr_current<<2)+4)) ) )
-    begin
-      if(!i_w) na4[3:0] = `E_STORE_ACCESS_FAULT; 
-    end
-    else
-    begin 
-      na4[3:0] = `NO_E;
-    end
-  end
-
-endfunction
-
-
-function [4:0] napot;
-  input [((1<<(XLEN+4))-1):0] i_pc_f;
-  input [((1<<(XLEN+4))-1):0] i_alu_out_e;
-  input i_r;
-  input i_w;
-  input i_x;
-  input i_res_src_b0_e;
-  input i_mem_write_e;
-
-  input [((1<<(XLEN+4))-1):0] i_pmpaddr_current_no_trail;
-  input [7:0] i_nr_of_trailing_ones;
-
-  begin
-    if(i_pc_f >= (i_pmpaddr_current_no_trail<<2) && (i_pc_f < ( (i_pmpaddr_current_no_trail << 2) + (1<<(i_nr_of_trailing_ones+3)))) )
-    begin
-        if(!i_x) napot[3:0] = `E_ILLEGAL_INSTR;
-    end
-    else if(i_res_src_b0_e &&   (i_alu_out_e >= (i_pmpaddr_current_no_trail<<2) && (i_alu_out_e < ( (i_pmpaddr_current_no_trail << 2) + (1<<(i_nr_of_trailing_ones+3)))))  )
-    begin
-        if(!i_r) napot[3:0] = `E_LOAD_ACCESS_FAULT;
-    end
-    else if(i_mem_write_e &&    (i_alu_out_e >= (i_pmpaddr_current_no_trail<<2) && (i_alu_out_e < ( (i_pmpaddr_current_no_trail << 2) + (1<<(i_nr_of_trailing_ones+3))))) )
-    begin
-        if(!i_w) napot[3:0] = `E_STORE_ACCESS_FAULT;
-    end
-    else 
-    begin
-      napot[3:0] = `NO_E;
-    end
-  end
-
-endfunction
-
 
 
 endmodule

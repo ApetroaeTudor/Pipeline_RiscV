@@ -3,7 +3,7 @@
 
 
 
-todo: -> signal forwarding for csr signals
+todo: -> rename signals from csr reg, remove _ff stuff from data_path, test all other exception cases, write the other functions (napot etc), remove unused signals from datapath
       -> write physical memory protection unit with pmpcfg registers that hold the memory region limits
         
 

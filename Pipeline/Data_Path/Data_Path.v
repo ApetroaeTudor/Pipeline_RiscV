@@ -100,18 +100,10 @@ module Data_Path#(
 
 
     // for mem management
-    output [((1<<(XLEN+4))-1):0] o_mem_data_e, //
+    output [((1<<(XLEN+4))-1):0] o_mem_data_e, 
     input [((1<<(XLEN+4))-1):0] i_mem_data_m, 
-    input [31:0] i_instr_f, //
+    input [31:0] i_instr_f 
 
-
-
-    // input i_bad_addr_f, // prob nu am nevoie de ele aici
-    // input i_bad_addr_load_e,
-    // input i_bad_addr_store_e
-
-
-    output o_disable_exceptions_1cc
 
 );
 
@@ -119,149 +111,130 @@ module Data_Path#(
 
 
 
-    reg [1:0] r_new_priv;
+    reg [1:0]                     r_new_priv;
+    reg [1:0]                     r_privilege = `MACHINE;
 
 
-    wire [((1<<(XLEN+4))-1):0] w_pc_in_f; 
-    wire [((1<<(XLEN+4))-1):0] w_pc_out_f; 
-    wire [((1<<(XLEN+4))-1):0] w_pc_p4_f; 
-    wire [3:0] w_exception_code_f;
-    wire w_pc_trap_sel_f;
-    reg [3:0] r_exception_code_f;
-    reg [((1<<(XLEN+4))-1):0]r_exception_pc_f;  
-    // wire [31:0] w_instr_f; 
+    wire [((1<<(XLEN+4))-1):0]    w_pc_in_f; 
+    wire [((1<<(XLEN+4))-1):0]    w_pc_out_f; 
+    wire [((1<<(XLEN+4))-1):0]    w_pc_p4_f; 
+    wire [3:0]                    w_exception_code_f;
+    wire                          w_pc_trap_sel_f;
+    reg [3:0]                     r_exception_code_f;
 
 
-    wire [31:0] w_instr_d;
-    wire [((1<<(XLEN+4))-1):0] w_pc_d; 
-    wire [((1<<(XLEN+4))-1):0] w_pc_p4_d; 
-    wire [((1<<(XLEN+4))-1):0] w_imm_32b_d;  
-    wire [((1<<(XLEN+4))-1):0] w_regs_do1_d; 
-    wire [((1<<(XLEN+4))-1):0] w_regs_do2_d;  
-    wire [((1<<(XLEN+4))-1):0] w_haz_do1_d; 
-    wire [((1<<(XLEN+4))-1):0] w_haz_do2_d; 
-    wire w_csr_reg_write_d;
-    wire [((1<<(XLEN+4))-1):0] w_new_csr_d; 
-    wire [((1<<(XLEN+4))-1):0] w_old_csr_d;  
-    wire w_ecall_d;
-    wire w_mret_d;
-    wire [((1<<(XLEN+4))-1):0] w_csr_read_data_d;  
-    wire [11:0] w_csr_rd_d; 
-    reg [3:0] r_exception_code_f_d_ff; 
-    reg [((1<<(XLEN+4))-1):0]r_exception_pc_f_d_ff; 
-    wire [((1<<(XLEN+4))-1):0] w_mepc_d; 
-    wire [((1<<(XLEN+4))-1):0] w_csr_unit_rs1_data_d;  
-    wire [((1<<(XLEN+4))-1):0] w_csr_unit_csr_data_d;  
-    wire [1:0] w_UXL_d;
-    wire [((1<<(XLEN+4))-1):0] w_masked_new_csr_d;
-    wire [((1<<(XLEN+4))-1):0] w_masked_old_csr_d;
+    wire [31:0]                   w_instr_d;
+    wire [((1<<(XLEN+4))-1):0]    w_pc_d; 
+    wire [((1<<(XLEN+4))-1):0]    w_pc_p4_d; 
+    wire [((1<<(XLEN+4))-1):0]    w_imm_32b_d;  
+    wire [((1<<(XLEN+4))-1):0]    w_regs_do1_d; 
+    wire [((1<<(XLEN+4))-1):0]    w_regs_do2_d;  
+    wire [((1<<(XLEN+4))-1):0]    w_haz_do1_d; 
+    wire [((1<<(XLEN+4))-1):0]    w_haz_do2_d; 
+    wire                          w_csr_reg_write_d;
+    wire [((1<<(XLEN+4))-1):0]    w_new_csr_d; 
+    wire [((1<<(XLEN+4))-1):0]    w_old_csr_d;  
+    wire                          w_ecall_d;
+    wire                          w_mret_d;
+    wire [((1<<(XLEN+4))-1):0]    w_csr_read_data_d;  
+    wire [11:0]                   w_csr_rd_d; 
+    reg [3:0]                     r_exception_code_f_d_ff; 
+    wire [((1<<(XLEN+4))-1):0]    w_mepc_d; 
+    wire [((1<<(XLEN+4))-1):0]    w_csr_unit_rs1_data_d;  
+    wire [((1<<(XLEN+4))-1):0]    w_csr_unit_csr_data_d;  
+    wire [1:0]                    w_UXL_d;
+    wire [((1<<(XLEN+4))-1):0]    w_masked_new_csr_d;
+    wire [((1<<(XLEN+4))-1):0]    w_masked_old_csr_d;
     wire [((1<<(XLEN+4))<<6)-1:0] w_concat_pmpaddr_d;
-    wire [511:0] w_concat_pmpcfg_d;
+    wire [511:0]                  w_concat_pmpcfg_d;
 
     
-    wire [((1<<(XLEN+4))-1):0] w_alu_out_e; 
-    wire [4:0] w_rs1_e; 
-    wire [4:0] w_rs2_e;
-    wire [4:0] w_rd_e;
-    wire [((1<<(XLEN+4))-1):0] w_pc_p4_e; 
-    wire [((1<<(XLEN+4))-1):0] w_pc_e; 
-    wire [((1<<(XLEN+4))-1):0] w_imm_32b_e;  
-    wire [((1<<(XLEN+4))-1):0] w_regs_do1_e; 
-    wire [((1<<(XLEN+4))-1):0] w_regs_do2_e; 
-    wire w_reg_write_e;
-    wire [1:0] w_result_src_e;
-    wire w_mem_write_e;
-    wire w_jmp_e;
-    wire w_branch_e;
-    wire [2:0] w_alu_ctl_e;
-    wire w_alu_src_opb_e;
-    wire [1:0] w_alu_src_opa_e;
-    wire [((1<<(XLEN+4))-1):0] w_haz_rs1_e; 
-    wire [((1<<(XLEN+4))-1):0] w_haz_rs2_e; 
-    wire [((1<<(XLEN+4))-1):0] w_alu_op_b_e; 
-    wire [((1<<(XLEN+4))-1):0] w_alu_op_a_e; 
-    wire w_zero_e;
-    wire [6:0] w_opcode_e;
-    wire [1:0] w_pc_src_e;
-    wire w_pc_trap_sel_e;
-    wire [3:0] w_exception_code_e;
-    wire [((1<<(XLEN+4))-1):0] w_pc_target_branch_or_jal_e; 
-    wire w_csr_reg_write_e;
-    wire [((1<<(XLEN+4))-1):0] w_new_csr_e; 
-    wire [((1<<(XLEN+4))-1):0] w_old_csr_e; 
-    wire [11:0] w_csr_rd_e; 
-    wire w_ecall_e;
-    wire w_mret_e;
-    reg [((1<<(XLEN+4))-1):0]r_exception_pc_e; 
-    reg [3:0] r_exception_code_e; 
-    reg [((1<<(XLEN+4))-1):0] r_exception_addr_e; 
-    wire [((1<<(XLEN+4))-1):0] w_mepc_e; 
-    wire [11:0] w_imm_12b_e; 
-    wire [2:0] w_f3_e;
-    wire [((1<<(XLEN+4))-1):0] w_mret_target_pc_e; 
-    wire w_branch_taken_e;
-    reg r_store_byte_e;
-    reg r_store_half_e;
-    wire [1:0] w_alu_shift_e;
+    wire [((1<<(XLEN+4))-1):0]    w_alu_out_e; 
+    wire [4:0]                    w_rs1_e; 
+    wire [4:0]                    w_rs2_e;
+    wire [4:0]                    w_rd_e;
+    wire [((1<<(XLEN+4))-1):0]    w_pc_p4_e; 
+    wire [((1<<(XLEN+4))-1):0]    w_pc_e; 
+    wire [((1<<(XLEN+4))-1):0]    w_imm_32b_e;  
+    wire [((1<<(XLEN+4))-1):0]    w_regs_do1_e; 
+    wire [((1<<(XLEN+4))-1):0]    w_regs_do2_e; 
+    wire                          w_reg_write_e;
+    wire [1:0]                    w_result_src_e;
+    wire                          w_mem_write_e;
+    wire                          w_jmp_e;
+    wire                          w_branch_e;
+    wire [2:0]                    w_alu_ctl_e;
+    wire                          w_alu_src_opb_e;
+    wire [1:0]                    w_alu_src_opa_e;
+    wire [((1<<(XLEN+4))-1):0]    w_haz_rs1_e; 
+    wire [((1<<(XLEN+4))-1):0]    w_haz_rs2_e; 
+    wire [((1<<(XLEN+4))-1):0]    w_alu_op_b_e; 
+    wire [((1<<(XLEN+4))-1):0]    w_alu_op_a_e; 
+    wire                          w_zero_e;
+    wire [6:0]                    w_opcode_e;
+    wire [1:0]                    w_pc_src_e;
+    wire                          w_pc_trap_sel_e;
+    wire [3:0]                    w_exception_code_e;
+    wire [((1<<(XLEN+4))-1):0]    w_pc_target_branch_or_jal_e; 
+    wire                          w_csr_reg_write_e;
+    wire [((1<<(XLEN+4))-1):0]    w_new_csr_e; 
+    wire [((1<<(XLEN+4))-1):0]    w_old_csr_e; 
+    wire [11:0]                   w_csr_rd_e; 
+    wire                          w_ecall_e;
+    wire                          w_mret_e;
+    reg [3:0]                     r_exception_code_e; 
+    reg [((1<<(XLEN+4))-1):0]     r_exception_addr_e; 
+    wire [((1<<(XLEN+4))-1):0]    w_mepc_e; 
+    wire [11:0]                   w_imm_12b_e; 
+    wire [2:0]                    w_f3_e;
+    wire [((1<<(XLEN+4))-1):0]    w_mret_target_pc_e; 
+    wire                          w_branch_taken_e;
+    reg                           r_store_byte_e;
+    reg                           r_store_half_e;
+    wire [1:0]                    w_alu_shift_e;
 
 
 
-    wire [((1<<(XLEN+4))-1):0] w_alu_out_m; 
-    wire [4:0] w_rd_m;
-    // wire [((1<<(XLEN+4))-1):0] w_haz_b_m; 
-    wire [((1<<(XLEN+4))-1):0] w_pc_p4_m; 
-    wire w_reg_wr_m;
-    wire [1:0] w_result_src_m;
-    // wire w_mem_write_m;
-    // wire [((1<<(XLEN+4))-1):0] w_mem_out_m; 
-    // wire [((1<<(XLEN+4))-1):0] w_effective_addr_m; 
-    // wire w_dm_en_m;
-    wire w_if_id_flush_exception_m;
-    wire w_id_ex_flush_exception_m;
-    wire w_csr_reg_write_m;
-    wire [((1<<(XLEN+4))-1):0] w_new_csr_m; 
-    wire [((1<<(XLEN+4))-1):0] w_old_csr_m; 
-    wire [11:0] w_csr_rd_m; 
-    reg [3:0] r_exception_code_e_m_ff;
-    reg [((1<<(XLEN+4))-1):0]r_exception_pc_e_m_ff; 
-    reg [((1<<(XLEN+4))-1):0]r_exception_addr_e_m_ff; 
-    wire [6:0] w_opcode_m;
-    wire [2:0] w_f3_m;
-    wire [11:0] w_imm_12b_m;
-    // wire w_store_byte_m;
-    // wire w_store_half_m;
+    wire [((1<<(XLEN+4))-1):0]    w_alu_out_m; 
+    wire [4:0]                    w_rd_m;
+    wire [((1<<(XLEN+4))-1):0]    w_pc_p4_m; 
+    wire                          w_reg_wr_m;
+    wire [1:0]                    w_result_src_m;
+    wire                          w_if_id_flush_exception_m;
+    wire                          w_id_ex_flush_exception_m;
+    wire                          w_csr_reg_write_m;
+    wire [((1<<(XLEN+4))-1):0]    w_new_csr_m; 
+    wire [((1<<(XLEN+4))-1):0]    w_old_csr_m; 
+    wire [11:0]                   w_csr_rd_m; 
+    reg [3:0]                     r_exception_code_e_m_ff;
+    wire [6:0]                    w_opcode_m;
+    wire [2:0]                    w_f3_m;
+    wire [11:0]                   w_imm_12b_m;
 
 
 
-    wire [4:0] w_rd_w;    
-    wire [((1<<(XLEN+4))-1):0] w_result_w; 
-    wire w_reg_write_w;
-    wire [((1<<(XLEN+4))-1):0] w_alu_out_w; 
-    wire [((1<<(XLEN+4))-1):0] w_mem_out_w; 
-    wire [((1<<(XLEN+4))-1):0] w_pc_p4_w; 
-    wire [1:0] w_result_src_w;
-    wire w_csr_reg_write_w;
-    wire [((1<<(XLEN+4))-1):0] w_new_csr_w; 
-    wire [((1<<(XLEN+4))-1):0] w_old_csr_w; 
-    wire [11:0] w_csr_rd_w;
-    wire [6:0] w_opcode_w;
-    wire [2:0] w_f3_w;
-    wire [11:0] w_imm_12b_w;
-    reg [((1<<(XLEN+4))-1):0] r_mem_to_reg_w; 
+    wire [4:0]                    w_rd_w;    
+    wire [((1<<(XLEN+4))-1):0]    w_result_w; 
+    wire                          w_reg_write_w;
+    wire [((1<<(XLEN+4))-1):0]    w_alu_out_w; 
+    wire [((1<<(XLEN+4))-1):0]    w_mem_out_w; 
+    wire [((1<<(XLEN+4))-1):0]    w_pc_p4_w; 
+    wire [1:0]                    w_result_src_w;
+    wire                          w_csr_reg_write_w;
+    wire [((1<<(XLEN+4))-1):0]    w_new_csr_w; 
+    wire [((1<<(XLEN+4))-1):0]    w_old_csr_w; 
+    wire [11:0]                   w_csr_rd_w;
+    wire [6:0]                    w_opcode_w;
+    wire [2:0]                    w_f3_w;
+    wire [11:0]                   w_imm_12b_w;
+    reg [((1<<(XLEN+4))-1):0]     r_mem_to_reg_w; 
 
 
-    reg [1:0] r_privilege = `MACHINE;
-
-    // ccN: PC_out_f (current PC) checked for exceptions
-	// 	- exception_code_f generated using past permissions.
-    // ccN+1: PC_trap_sel_f redirects PC_in_f if exception occurred.
-	//     - Permissions update based on exception_code_f from cycle N.
 
 
     always@(*)
     begin
         if(i_rst) r_privilege = `MACHINE;
-        // else r_privilege = r_new_priv;
         else
         begin
             if(r_exception_code_f_d_ff!=`NO_E)
@@ -281,35 +254,22 @@ module Data_Path#(
     begin
         if (i_rst) r_privilege<= `MACHINE;
         else if (i_clk_en) begin
-            // r_privilege<=w_new_priv; 
-            // if (r_privilege && w_mret_e)
-            //     r_privilege <= `USER;
-
-            // if ((w_exception_code_e != `NO_E || w_exception_code_f != `NO_E) && !i_rst)
-            //     r_privilege <= `MACHINE;
-
             if (w_exception_code_f!=`NO_E)
             begin
                 r_exception_code_f_d_ff<=r_exception_code_f;
-                r_exception_pc_f_d_ff<=r_exception_pc_f;
             end
             else
             begin
                 r_exception_code_f_d_ff<=`NO_E;
-                r_exception_pc_f_d_ff<=0;
             end
 
             if(w_exception_code_e!=`NO_E)
             begin
                 r_exception_code_e_m_ff<=r_exception_code_e;
-                r_exception_pc_e_m_ff<=r_exception_pc_e;
-                r_exception_addr_e_m_ff<=r_exception_addr_e;
             end
             else
             begin
                 r_exception_code_e_m_ff<=`NO_E;
-                r_exception_pc_e_m_ff<=0;
-                r_exception_addr_e_m_ff<=0;
             end
         end
 
@@ -318,14 +278,8 @@ module Data_Path#(
 
     always@(*)
     begin
-
         r_exception_code_f = w_exception_code_f;
-        r_exception_pc_f = w_pc_out_f;
-
         r_exception_code_e = w_exception_code_e;
-        r_exception_pc_e = w_pc_e;
-        r_exception_addr_e = w_alu_out_e;
-
     end
 
 
@@ -376,12 +330,6 @@ module Data_Path#(
     (w_pc_src_e == 2'b10)?w_alu_out_e:{(1<<(XLEN+4)){1'b0}}; // rs1+imm
 
 
-    // Mem_Instr #(.XLEN(XLEN)) Mem_Instr_Inst(
-    //                          .i_rst(i_rst),
-    //                          .i_adr(w_pc_out_f),
-    //                          .o_instr(w_instr_f)
-    //                          );
-
 
     // ~IF ------------------------------------------------------------
 
@@ -429,6 +377,8 @@ module Data_Path#(
                            .o_rd_data_2(w_regs_do2_d)
                            );
 
+
+
     CSR_Unit #(.XLEN(XLEN),
                .SUPPORTED_EXTENSIONS(SUPPORTED_EXTENSIONS)
                )
@@ -439,13 +389,13 @@ module Data_Path#(
                     .i_csr_write_addr_w(w_csr_rd_w),
                     .i_csr_write_enable_w(w_csr_reg_write_w),
 
-                    .i_exception_code_f_d_ff(w_exception_code_f),
-                    .i_exception_code_e_m_ff(w_exception_code_e),
+                    .i_exception_code_f(w_exception_code_f),
+                    .i_exception_code_e(w_exception_code_e),
                     
 
-                    .i_exception_pc_f_d_ff(r_exception_pc_f),                    
-                    .i_exception_pc_e_m_ff(r_exception_pc_e),
-                    .i_exception_addr_e_m_ff(r_exception_addr_e),
+                    .i_exception_pc_f(w_pc_out_f),                    
+                    .i_exception_pc_e(w_pc_e),
+                    .i_exception_addr_e(w_alu_out_e),
 
                     .i_mret_e(w_mret_e),
                     .i_csr_data_w(w_new_csr_w),
@@ -463,8 +413,7 @@ module Data_Path#(
                     .o_concat_pmpaddr(w_concat_pmpaddr_d),
                     .o_concat_pmpcfg(w_concat_pmpcfg_d),
                     .o_UXL(w_UXL_d),
-                    .o_new_priv(r_new_priv),
-                    .o_disable_exceptions_1cc(o_disable_exceptions_1cc)  
+                    .o_new_priv(r_new_priv)
                 );
 
 
@@ -667,13 +616,11 @@ module Data_Path#(
                        .i_clk_en(i_clk_en),
                        
                        .i_rd_e(w_rd_e),
-                       .i_alu_out_e(w_alu_out_e),  //stays
-                    //    .i_haz_b_e(w_haz_rs2_e), // doesnt stay
+                       .i_alu_out_e(w_alu_out_e), 
                        .i_pc_p4_e(w_pc_p4_e),
                        
                        .i_reg_wr_e(w_reg_write_e),
                        .i_result_src_e(w_result_src_e),
-                    //    .i_mem_write_e(w_mem_write_e), // doesnt stay
                        .i_exception_code_e(w_exception_code_e), 
 
                        .i_csr_reg_write_e(w_csr_reg_write_e),
@@ -685,25 +632,19 @@ module Data_Path#(
                        .i_f3_e(w_f3_e),
                        .i_imm_12b_e(w_imm_12b_e),
                        
-                    //    .i_store_byte_e(r_store_byte_e), // doesnt stay
-                    //    .i_store_half_e(r_store_half_e), // doesnt stay
                        
                        .o_if_id_flush_exception_m(w_if_id_flush_exception_m),
                        .o_id_ex_flush_exception_m(w_id_ex_flush_exception_m),
                        .o_rd_m(w_rd_m),
-                       .o_alu_out_m(w_alu_out_m), // stays
-                    //    .o_haz_b_m(w_haz_b_m), // doesn't stay
+                       .o_alu_out_m(w_alu_out_m), 
                        .o_pc_p4_m(w_pc_p4_m),
                        .o_reg_wr_m(w_reg_wr_m),
                        .o_result_src_m(w_result_src_m),
-                    //    .o_mem_write_m(w_mem_write_m), // doesn't stay
 
                        .o_opcode_m(w_opcode_m),
                        .o_f3_m(w_f3_m),
                        .o_imm_12b_m(w_imm_12b_m),
 
-                    //    .o_store_byte_m(w_store_byte_m), // doesn't stay
-                    //    .o_store_half_m(w_store_half_m), // doesn't stay
 
                        .o_csr_reg_write_m(w_csr_reg_write_m),
                        .o_new_csr_m(w_new_csr_m),
@@ -712,24 +653,6 @@ module Data_Path#(
                        );
 
     // MEM ------------------------------------------------------------
-
-    // Mem_Calculation_Unit #(.XLEN(XLEN)) Mem_Calculation_Unit_Inst(
-    //                                                .i_addr_m(w_alu_out_m),
-    //                                                .o_effective_addr_m(w_effective_addr_m), //
-    //                                                .o_dm_en(w_dm_en_m)
-    //                                                );
-
-    // Mem_Data #(.XLEN(XLEN)) Mem_Data_Inst(
-    //                        .i_clk(i_clk),
-    //                        .i_clk_enable(i_clk_en),
-    //                        .i_rst(i_rst), 
-    //                        .i_mem_write(w_mem_write_m),  //
-    //                        .i_mem_addr(w_effective_addr_m), //
-    //                        .i_mem_data(w_haz_b_m),  // 
-    //                        .i_store_byte(w_store_byte_m), //
-    //                        .i_store_half(w_store_half_m), //
-    //                        .o_mem_data(w_mem_out_m) //
-    //                        );
 
     assign o_rd_m = w_rd_m;
     assign o_opcode_m = w_opcode_m;

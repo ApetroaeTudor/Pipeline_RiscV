@@ -126,15 +126,15 @@ pmpcfg1_32 = 32'b10001000_10001011_10001011_10001011 = 32'h888B_8B8B
 pmpcfg2_32 = 32'b00000000_00000000_00000000_10001000 = 32'h0000_0088
 
 
-pmpaddr0 = 0x0000_2000
-pmpaddr1 = 0x0000_4000
-pmpaddr2 = 0x0000_f800
-pmpaddr3 = 0x0001_0000
-pmpaddr4 = 0x0001_0800
-pmpaddr5 = 0x0001_1000
-pmpaddr6 = 0x0001_1800
-pmpaddr7 = 0x0001_2000
-pmpaddr8 = 0x0001_2800
+pmpaddr0 = 0x0000_2000 // trap_hi 
+pmpaddr1 = 0x0000_4000 // reset_hi
+pmpaddr2 = 0x0000_f800 // text_hi
+pmpaddr3 = 0x0001_0000 // rom_data_hi
+pmpaddr4 = 0x0001_0800 // global_hi
+pmpaddr5 = 0x0001_1000 // dynamic_hi
+pmpaddr6 = 0x0001_1800 // stack_hi
+pmpaddr7 = 0x0001_2000 // m_stack_hi
+pmpaddr8 = 0x0001_2800 // io_hi
 
 
 

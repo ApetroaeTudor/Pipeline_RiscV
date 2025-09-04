@@ -10,12 +10,12 @@ module M_CSR_Reg_File#(
     input [11:0] i_csr_read_addr,
     input i_csr_write_enable,
 
-    input [3:0] i_exception_code_f_d_ff,
-    input [((1<<(XLEN+4))-1):0] i_exception_pc_f_d_ff,
+    input [3:0] i_exception_code_f,
+    input [((1<<(XLEN+4))-1):0] i_exception_pc_f,
 
-    input [3:0] i_exception_code_e_m_ff,
-    input [((1<<(XLEN+4))-1):0] i_exception_pc_e_m_ff,
-    input [((1<<(XLEN+4))-1):0] i_exception_addr_e_m_ff,
+    input [3:0] i_exception_code_e,
+    input [((1<<(XLEN+4))-1):0] i_exception_pc_e,
+    input [((1<<(XLEN+4))-1):0] i_exception_addr_e,
     input i_mret_e,
     input [1:0] i_current_privilege,
 
@@ -32,13 +32,10 @@ module M_CSR_Reg_File#(
 
     output [1:0] o_UXL,
 
-    output [1:0] o_new_priv,
+    output [1:0] o_new_priv
 
-    output o_disable_exceptions_1cc
 
 );
-    reg r_disable_exceptions_1cc;
-    assign o_disable_exceptions_1cc = r_disable_exceptions_1cc;
 
     reg [1:0] r_new_priv;
     assign o_new_priv = r_new_priv;
@@ -486,39 +483,37 @@ module M_CSR_Reg_File#(
             end
             // these don't need csr wr en
 
-             if(i_exception_code_f_d_ff!=`NO_E)
+             if(i_exception_code_f!=`NO_E)
                     begin
-                        r_mepc<=i_exception_pc_f_d_ff;
+                        r_mepc<=i_exception_pc_f;
                         r_mstatus[3] <= 0; //mie
                         r_mstatus[7] <= r_mstatus[3]; //mpie
                         r_mcause[31]<=0; // type exception
-                        r_mcause[30:0]<=$unsigned(i_exception_code_f_d_ff);
-                        r_mtval<=i_exception_pc_f_d_ff;
+                        r_mcause[30:0]<=$unsigned(i_exception_code_f);
+                        r_mtval<=i_exception_pc_f;
                         r_new_priv<=`MACHINE;
                         r_mstatus[12:11]<=i_current_privilege; //mpp // might not work
                     end
-                else if(i_exception_code_e_m_ff!=`NO_E)
+                else if(i_exception_code_e!=`NO_E)
                     begin
 
-                        r_mepc<=i_exception_pc_e_m_ff;
+                        r_mepc<=i_exception_pc_e;
                         r_mstatus[3] <= 0; //mie
                         r_mstatus[7] <= r_mstatus[3]; //mpie<=mie
                         r_mcause[31]<=0; // type exception
-                        r_mcause[30:0]<=$unsigned(i_exception_code_e_m_ff);
-                        r_mtval<=i_exception_addr_e_m_ff;
+                        r_mcause[30:0]<=$unsigned(i_exception_code_e);
+                        r_mtval<=i_exception_addr_e;
                         r_new_priv<=`MACHINE;
                         r_mstatus[12:11]<=i_current_privilege; //mpp // might not work
 
                     end
                 else if(i_mret_e) // return from trap
                     begin
-                        r_disable_exceptions_1cc<=1'b1;
                         r_mstatus[3] <= r_mstatus[7]; // mie<=mpie
                         r_mstatus[12:11]<=i_current_privilege; // mpp<=current_priv
                         r_new_priv<=r_mstatus[12:11]; // current_priv<=mpp
                     end
 
-                if(!i_mret_e) r_disable_exceptions_1cc<=1'b0;
                 
         end
     end
@@ -555,21 +550,6 @@ module M_CSR_Reg_File#(
     end
 end
 
-// on trap enter:
-// mepc<=pc
-// privilege<=MACHINE
-// mstatus.MPP<=privilege
-// mstatus.MPIE<=mstatus.MIE
-// mstatus.MIE<=0
-
-// on trap exit:
-// pc<=mepc
-// mstatus.mie<=mstatus.mpie
-// mstatus.mpie<=mstatus.mie
-// mstatus.mpp<=privilege
-// privilege<=mstatus.mpp
-
-            
     
 
 endmodule

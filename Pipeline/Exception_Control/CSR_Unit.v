@@ -9,11 +9,11 @@ module CSR_Unit#(
     input [11:0] i_csr_write_addr_w,
     input i_csr_write_enable_w,
 
-    input [3:0] i_exception_code_f_d_ff,
-    input [((1<<(XLEN+4))-1):0] i_exception_pc_f_d_ff,
-    input [3:0] i_exception_code_e_m_ff,
-    input [((1<<(XLEN+4))-1):0] i_exception_pc_e_m_ff,
-    input [((1<<(XLEN+4))-1):0] i_exception_addr_e_m_ff,
+    input [3:0] i_exception_code_f,
+    input [((1<<(XLEN+4))-1):0] i_exception_pc_f,
+    input [3:0] i_exception_code_e,
+    input [((1<<(XLEN+4))-1):0] i_exception_pc_e,
+    input [((1<<(XLEN+4))-1):0] i_exception_addr_e,
     input i_mret_e,
 
     input  [(1<<(XLEN+4))-1:0] i_csr_data_w,
@@ -38,9 +38,8 @@ module CSR_Unit#(
 
     output [1:0] o_UXL,
 
-    output [1:0] o_new_priv,
+    output [1:0] o_new_priv
 
-    output o_disable_exceptions_1cc
 );
 
     wire [6:0] w_opcode_d = i_instr_d[6:0];
@@ -98,11 +97,11 @@ module CSR_Unit#(
                         .i_csr_write_addr(i_csr_write_addr_w),
                         .i_csr_read_addr(w_imm_d),
                         .i_csr_write_enable(i_csr_write_enable_w),
-                        .i_exception_code_f_d_ff(i_exception_code_f_d_ff),
-                        .i_exception_pc_f_d_ff(i_exception_pc_f_d_ff),
-                        .i_exception_code_e_m_ff(i_exception_code_e_m_ff),
-                        .i_exception_pc_e_m_ff(i_exception_pc_e_m_ff),
-                        .i_exception_addr_e_m_ff(i_exception_addr_e_m_ff),
+                        .i_exception_code_f(i_exception_code_f),
+                        .i_exception_pc_f(i_exception_pc_f),
+                        .i_exception_code_e(i_exception_code_e),
+                        .i_exception_pc_e(i_exception_pc_e),
+                        .i_exception_addr_e(i_exception_addr_e),
                         .i_mret_e(i_mret_e),
                         .i_current_privilege(i_current_privilege),
                         .i_csr_data(i_csr_data_w),
@@ -111,8 +110,7 @@ module CSR_Unit#(
                         .o_concat_pmpaddr(o_concat_pmpaddr),
                         .o_concat_pmpcfg(o_concat_pmpcfg),
                         .o_UXL(o_UXL),
-                        .o_new_priv(o_new_priv),
-                        .o_disable_exceptions_1cc(o_disable_exceptions_1cc)
+                        .o_new_priv(o_new_priv)
                     );
 
 

@@ -141,11 +141,13 @@ Testing was done using Icarus Verilog and GTKWave in Visual Studio Code.<br>
 
 ### Tools Needed and how to use
 -> Icarus Verilog, GTKWave
-```Debian/Ubuntu
+Debian/Ubuntu:
+```bash
 apt install iverilog
 apt install gtkwave
 ```
-```RedHat/Fedora
+RedHat/Fedora:
+```bash
 dnf install iverilog
 dnf install gtkwave
 ```

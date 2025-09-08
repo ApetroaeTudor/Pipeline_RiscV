@@ -17,7 +17,8 @@ Implementation of a RISC-V softcore connected with parameterized memory modules 
 -> I type zicsr: csrrw, csrrs, csrrc, csrrwi(WIP), csrrsi(WIP), csrrci(WIP)<br>
 And the rest of the rv32i base instruction set.<br>
 
-**Memory:**<br>
+# Memory
+
 -> Harvard architecture<br>
 -> Three Memory modules: Instruction ROM, Data ROM, Data RAM<br>
 -> The Data ROM is used for load data, which in the Reset Vector should be copied into RAM<br>
@@ -25,7 +26,7 @@ And the rest of the rv32i base instruction set.<br>
 -> 256KiB ROM (instruction memory and data ROM), 32KiB RAM (global data, dynamic, stack, machine stack), 8KiB IO<br>
 -> Memory restrictions are imposed by hardware (in order to prevent data access into the instruction ROM), and physical memory segments access permissions are imposed through the Physical Memory Protection (PMP) CSR registers<br>
 
-# Memory Map
+**Memory:**<br>
 
 ## RAM
 

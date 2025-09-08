@@ -25,38 +25,26 @@ And the rest of the rv32i base instruction set.<br>
 -> 256KiB ROM (instruction memory and data ROM), 32KiB RAM (global data, dynamic, stack, machine stack), 8KiB IO<br>
 -> Memory restrictions are imposed by hardware (in order to prevent data access into the instruction ROM), and physical memory segments access permissions are imposed through the Physical Memory Protection (PMP) CSR registers<br>
 
--> Current memory regions: <br>
+# Memory Map
 
-RAM:<br>                      
-    IO_HI(---)            = 0x0004_9FFF<br>  
-    IO_LO 8KiB            = 0x0004_8000<br> 
-<br> 
-    M_STACK_HI(---)       = 0x0004_7FFF<br>   
-    M_STACK_LO 8KiB       = 0x0004_6000<br>   
-<br>     
-    STACK_HI(RW-)         = 0x0004_5FFF<br>  
-    STACK_LO 8KiB         = 0x0004_4000<br>   
-<br> 
-    DYNAMIC_HI(RW-)       = 0x0004_3FFF<br>  
-    DYNAMIC_LO 8KiB       = 0x0004_2000<br> 
-<br> 
-    GLB_DATA_HI(RW-)      = 0x0004_1FFF<br>   
-    GLB_DATA_LO 8KiB      = 0x0004_0000<br>   
-<br> 
-<br> 
-ROM:<br> 
-    ROM_DATA_HI(R--)      = 0x0003_FFFF<br> 
-    ROM_DATA_LO 8KiB      = 0x0003_E000<br> 
-<br> 
-    TEXT_HI(--X)          = 0x0003_DFFF<br> 
-    TEXT_LO 184KiB        = 0x0001_0000<br> 
-<br> 
-    RESET_HI(---)         = 0x0000_FFFF<br> 
-    RESET_LO 32KiB        = 0x0000_8000<br>   
-<br> 
-    TRAP_HI(---)          = 0x0000_7FFF<br>  
-    TRAP_LO 32KiB         = 0x0000_0000<br>   
-<br> 
+## RAM
+
+| Region       | Access | High Addr   | Low Addr    | Size  |
+|--------------|--------|-------------|-------------|-------|
+| IO           | ---    | 0x0004_9FFF | 0x0004_8000 | 8 KiB |
+| M_STACK      | ---    | 0x0004_7FFF | 0x0004_6000 | 8 KiB |
+| STACK        | RW-    | 0x0004_5FFF | 0x0004_4000 | 8 KiB |
+| DYNAMIC      | RW-    | 0x0004_3FFF | 0x0004_2000 | 8 KiB |
+| GLB_DATA     | RW-    | 0x0004_1FFF | 0x0004_0000 | 8 KiB |
+
+## ROM
+
+| Region       | Access | High Addr   | Low Addr    | Size    |
+|--------------|--------|-------------|-------------|---------|
+| ROM_DATA     | R--    | 0x0003_FFFF | 0x0003_E000 | 8 KiB   |
+| TEXT         | --X    | 0x0003_DFFF | 0x0001_0000 | 184 KiB |
+| RESET        | ---    | 0x0000_FFFF | 0x0000_8000 | 32 KiB  |
+| TRAP         | ---    | 0x0000_7FFF | 0x0000_0000 | 32 KiB  |
 
 -> PMP registers are written in M mode, in the reset vector<br>
 -> The restrictions imposed through PMP are only available for U-mode code<br>

@@ -140,7 +140,7 @@ Testing was done using Icarus Verilog and GTKWave in Visual Studio Code.<br>
 
 
 ### Tools Needed and how to use
--> Icarus Verilog, GTKWave
+-> Icarus Verilog, GTKWave<br>
 Debian/Ubuntu:
 ```bash
 apt install iverilog

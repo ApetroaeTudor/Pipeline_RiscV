@@ -28,34 +28,34 @@ And the rest of the rv32i base instruction set.<br>
 -> Current memory regions: <br>
 
 RAM:<br>                      
-    IO_HI(---)            = 0x0004_9FFF: 0000_0000_0000_0100__1001_1111_1111_1111<br>  
-    IO_LO 8KiB            = 0x0004_8000: 0000_0000_0000_0100__1000_0000_0000_0000<br> 
+    IO_HI(---)            = 0x0004_9FFF<br>  
+    IO_LO 8KiB            = 0x0004_8000<br> 
 <br> 
-    M_STACK_HI(---)       = 0x0004_7FFF: 0000_0000_0000_0100__0111_1111_1111_1111<br>   
-    M_STACK_LO 8KiB       = 0x0004_6000: 0000_0000_0000_0100__0110_0000_0000_0000<br>   
+    M_STACK_HI(---)       = 0x0004_7FFF<br>   
+    M_STACK_LO 8KiB       = 0x0004_6000<br>   
 <br>     
-    STACK_HI(RW-)         = 0x0004_5FFF: 0000_0000_0000_0100__0101_1111_1111_1111<br>  
-    STACK_LO 8KiB         = 0x0004_4000: 0000_0000_0000_0100__0100_0000_0000_0000<br>   
+    STACK_HI(RW-)         = 0x0004_5FFF<br>  
+    STACK_LO 8KiB         = 0x0004_4000<br>   
 <br> 
-    DYNAMIC_HI(RW-)       = 0x0004_3FFF: 0000_0000_0000_0100__0011_1111_1111_1111<br>  
-    DYNAMIC_LO 8KiB       = 0x0004_2000: 0000_0000_0000_0100__0010_0000_0000_0000<br> 
+    DYNAMIC_HI(RW-)       = 0x0004_3FFF<br>  
+    DYNAMIC_LO 8KiB       = 0x0004_2000<br> 
 <br> 
-    GLB_DATA_HI(RW-)      = 0x0004_1FFF: 0000_0000_0000_0100__0001_1111_1111_1111<br>   
-    GLB_DATA_LO 8KiB      = 0x0004_0000: 0000_0000_0000_0100__0000_0000_0000_0000<br>   
+    GLB_DATA_HI(RW-)      = 0x0004_1FFF<br>   
+    GLB_DATA_LO 8KiB      = 0x0004_0000<br>   
 <br> 
 <br> 
 ROM:<br> 
-    ROM_DATA_HI(R--)      = 0x0003_FFFF: 0000_0000_0000_0011__1111_1111_1111_1111<br> 
-    ROM_DATA_LO 8KiB      = 0x0003_E000: 0000_0000_0000_0011__1110_0000_0000_0000<br> 
+    ROM_DATA_HI(R--)      = 0x0003_FFFF<br> 
+    ROM_DATA_LO 8KiB      = 0x0003_E000<br> 
 <br> 
-    TEXT_HI(--X)          = 0x0003_DFFF: 0000_0000_0000_0011__1101_1111_1111_1111<br> 
-    TEXT_LO 184KiB        = 0x0001_0000: 0000_0000_0000_0001__0000_0000_0000_0000<br> 
+    TEXT_HI(--X)          = 0x0003_DFFF<br> 
+    TEXT_LO 184KiB        = 0x0001_0000<br> 
 <br> 
-    RESET_HI(---)         = 0x0000_FFFF: 0000_0000_0000_0000__1111_1111_1111_1111<br> 
-    RESET_LO 32KiB        = 0x0000_8000: 0000_0000_0000_0000__1000_0000_0000_0000<br>   
+    RESET_HI(---)         = 0x0000_FFFF<br> 
+    RESET_LO 32KiB        = 0x0000_8000<br>   
 <br> 
-    TRAP_HI(---)          = 0x0000_7FFF: 0000_0000_0000_0000__0111_1111_1111_1111<br>  
-    TRAP_LO 32KiB         = 0x0000_0000: 0000_0000_0000_0000__0000_0000_0000_0000<br>   
+    TRAP_HI(---)          = 0x0000_7FFF<br>  
+    TRAP_LO 32KiB         = 0x0000_0000<br>   
 <br> 
 
 -> PMP registers are written in M mode, in the reset vector<br>

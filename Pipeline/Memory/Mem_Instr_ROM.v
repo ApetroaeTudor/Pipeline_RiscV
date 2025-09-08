@@ -9,7 +9,7 @@ module Mem_Instr_ROM#(
     output [31:0] o_instr
 );
 
-    localparam LOAD_FILE = (XLEN==`XLEN_32b)?"Mem_Files/instructions_32b.mem":"./Mem_Files/instructions_64b.mem";
+    localparam LOAD_FILE = (XLEN==`XLEN_32b)?"./Mem_Files/instructions_32b.mem":"./Mem_Files/instructions_64b.mem";
     reg [WIDTH-1:0] r_mem_instr [DEPTH-1:0];
 
     assign {o_instr[`byte_3] , o_instr[`byte_2] , o_instr[`byte_1] , o_instr[`byte_0]} = 
@@ -28,7 +28,9 @@ module Mem_Instr_ROM#(
                 r_mem_instr[i] = 0;
                 temp_mem[i] = 0;
             end
-            $readmemh("Mem_Files/instructions_32b.mem",temp_mem);
+
+            if(XLEN == `XLEN_64b) $readmemh("./Mem_Files/instructions_64b.mem",temp_mem);
+            else $readmemh("./Mem_Files/instructions_32b.mem",temp_mem);
 
 
             for(i=0; i< DEPTH<<2; i = i+1)
@@ -39,7 +41,7 @@ module Mem_Instr_ROM#(
                 r_mem_instr[ i*4 + 0 ] = temp_mem[i][7:0];
             end
         end
-    `else // not functional
+    `else 
 
         initial begin
             for(i=0;i<DEPTH;i = i+1)
@@ -48,7 +50,7 @@ module Mem_Instr_ROM#(
                 temp_mem[i] = 0;
             end
             $readmemh("./Asm_Code/startup.hex",temp_mem);
-            for(i=0; i< (1<<18); i = i+1)
+            for(i=0; i< DEPTH<<2; i = i+1)
             begin
                 r_mem_instr[ i*4 + 0 ] = temp_mem[i][31:24];
                 r_mem_instr[ i*4 + 1 ] = temp_mem[i][23:16];

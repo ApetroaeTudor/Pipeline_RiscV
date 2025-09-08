@@ -79,9 +79,9 @@ fec10113 //0000 0004 addi sp,sp,-20
 0102d293//srli x5,x5,16  -> 0000 08a0
 30029073// csrrw x0,mstatus,x5
 
-// MISA 40000080
+// MISA 40000100
 400002b7// lui x5,0x40000
-08028293// addi x5,x5,0x080
+10028293// addi x5,x5,0x100
 30129073// csrrw x0,misa,x5
 
 // PMPADDR0 

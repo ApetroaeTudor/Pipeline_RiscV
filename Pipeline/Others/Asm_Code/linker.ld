@@ -1,3 +1,5 @@
+// has to be updated
+
 ENTRY(_start)
 
 MEMORY 

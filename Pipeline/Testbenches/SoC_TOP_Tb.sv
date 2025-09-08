@@ -5,7 +5,7 @@ reg t_r_clk;
 reg t_r_probe_clk;
 reg t_r_rst;
 reg t_r_btn_enable_d_s_o;
-localparam XLEN = `XLEN_32b;
+localparam XLEN = `XLEN_64b;
 localparam SUPPORTED_EXTENSIONS = `SUPPORTED_EXTENSIONS;
 localparam ENABLED_PMP_REGISTERS = 12;
 

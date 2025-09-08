@@ -1,5 +1,5 @@
-# RISC-V Pipeline 
-The implementation of this 5 stage pipeline processing unit is based on the single-cycle variant. Here the execution of the instruction is divided in 5 distinct stages, each one taking exactly one clock cycle.<br>
+# RISC-V Minimal SoC
+Implementation of a RISC-V softcore connected with parameterized memory modules and a memory mapper unit. The execution of instructions is divided in 5 distinct stages, each one taking exactly one clock cycle.<br>
 **The 5 stages are:**<br>
 -> Instruction Fetch (IF)<br>
 -> Instruction Decode (ID)<br>
@@ -17,38 +17,56 @@ The implementation of this 5 stage pipeline processing unit is based on the sing
 -> I type zicsr: csrrw, csrrs, csrrc, csrrwi(WIP), csrrsi(WIP), csrrci(WIP)<br>
 And the rest of the rv32i base instruction set.<br>
 
-**Memory Size:**<br>
+**Memory:**<br>
 -> Harvard architecture<br>
+-> Three Memory modules: Instruction ROM, Data ROM, Data RAM<br>
+-> The Data ROM is used for load data, which in the Reset Vector should be copied into RAM<br>
 -> 2MiB total<br>
--> 1MiB rom (instruction memory), 1MiB ram (data memory)<br>
--> Currently memory restrictions are hardware-imposed. To implement: Physical memory protection registers.<br>
+-> 256KiB ROM (instruction memory and data ROM), 32KiB RAM (global data, dynamic, stack, machine stack), 8KiB IO<br>
+-> Memory restrictions are imposed by hardware (in order to prevent data access into the instruction ROM), and physical memory segments access permissions are imposed through the Physical Memory Protection (PMP) CSR registers<br>
+
 -> Current memory regions: <br>
 
-TRAP_LO 32'h0000_0000 <br>
-TRAP_HI 32'h0003_ffff <br>
+RAM:<br>                      
+    IO_HI(---)            = 0x0004_9FFF: 0000_0000_0000_0100__1001_1111_1111_1111<br>  
+    IO_LO 8KiB            = 0x0004_8000: 0000_0000_0000_0100__1000_0000_0000_0000<br> 
+<br> 
+    M_STACK_HI(---)       = 0x0004_7FFF: 0000_0000_0000_0100__0111_1111_1111_1111<br>   
+    M_STACK_LO 8KiB       = 0x0004_6000: 0000_0000_0000_0100__0110_0000_0000_0000<br>   
+<br>     
+    STACK_HI(RW-)         = 0x0004_5FFF: 0000_0000_0000_0100__0101_1111_1111_1111<br>  
+    STACK_LO 8KiB         = 0x0004_4000: 0000_0000_0000_0100__0100_0000_0000_0000<br>   
+<br> 
+    DYNAMIC_HI(RW-)       = 0x0004_3FFF: 0000_0000_0000_0100__0011_1111_1111_1111<br>  
+    DYNAMIC_LO 8KiB       = 0x0004_2000: 0000_0000_0000_0100__0010_0000_0000_0000<br> 
+<br> 
+    GLB_DATA_HI(RW-)      = 0x0004_1FFF: 0000_0000_0000_0100__0001_1111_1111_1111<br>   
+    GLB_DATA_LO 8KiB      = 0x0004_0000: 0000_0000_0000_0100__0000_0000_0000_0000<br>   
+<br> 
+<br> 
+ROM:<br> 
+    ROM_DATA_HI(R--)      = 0x0003_FFFF: 0000_0000_0000_0011__1111_1111_1111_1111<br> 
+    ROM_DATA_LO 8KiB      = 0x0003_E000: 0000_0000_0000_0011__1110_0000_0000_0000<br> 
+<br> 
+    TEXT_HI(--X)          = 0x0003_DFFF: 0000_0000_0000_0011__1101_1111_1111_1111<br> 
+    TEXT_LO 184KiB        = 0x0001_0000: 0000_0000_0000_0001__0000_0000_0000_0000<br> 
+<br> 
+    RESET_HI(---)         = 0x0000_FFFF: 0000_0000_0000_0000__1111_1111_1111_1111<br> 
+    RESET_LO 32KiB        = 0x0000_8000: 0000_0000_0000_0000__1000_0000_0000_0000<br>   
+<br> 
+    TRAP_HI(---)          = 0x0000_7FFF: 0000_0000_0000_0000__0111_1111_1111_1111<br>  
+    TRAP_LO 32KiB         = 0x0000_0000: 0000_0000_0000_0000__0000_0000_0000_0000<br>   
+<br> 
 
-RESET_LO 32'h0004_0000 <br>
-RESET_HI 32'h0007_ffff <br>
-
-TEXT_LO 32'h0008_0000 <br>
-TEXT_HI 32'h000b_ffff <br>
-
-GLOBAL_LO 32'h0010_0000 <br>
-GLOBAL_HI 32'h0013_ffff <br>
-
-STACK_LO 32'h0014_0000 <br>
-STACK_HI 32'h0017_ffff <br>
-
-CSR_STACK_LO 32'h0018_0000 <br>
-CSR_STACK_HI 32'h001b_ffff <br>
-
-IO_LO 32'h001c_0000 <br>
-IO_HI 32'h001f_ffff <br>
-
+-> PMP registers are written in M mode, in the reset vector<br>
+-> The restrictions imposed through PMP are only available for U-mode code<br>
+-> M mode code will still be enforced by the Memory Mapper Unit, which can detect access into the Instruction ROM module<br>
+-> Current implementation allows for NAPOT, NA4 and TOR pmpcfg/pmpaddr configs. (TOR is used in the sample code)<br>
 
 ### Implementation Details
 ![Implementation diagram](./Pipeline/Others/Pipeline.png)
 The 5 stage pipeline structure is defined by the 4 stage-dividing registers, which store relevant data between clock cycles. In the diagram presented here, the data path is represented with black, and the various control signals that define the execution of certain instructions is represented with blue.<br>
+This diagram only represents the baseline of the project.<br>
 A benefit of the pipelined architecture is that multiple instructions are executed simultaneously. At the same time, hazards can occur, causing incorrect program execution. The Hazard Unit, based on information that is already present in the pipeline, can detect these occurances. <br> <br>
 **Some relevant hazards are:** <br>
 -> Data Hazards (Read after Write, register use immediately after lw):<br>
@@ -103,12 +121,61 @@ Upon detecting an exception the PC is updated to the beginning of the Trap Vecto
 1. PC <= mepc
 2. mie <= default interrupt permissions<br>
 
+<br>
+
+-> When entering an exception the current privilege level will be updated to MACHINE, the mstatus.mpp field will be updated to the previous privilege.<br>
+-> When returning from an exception, the current privilege will be taken from mstatus.mpp.<br>
+-> The CSR Data Masking Unit is used to enforce special read/write policies (such as WPRI and WARL), before the actual writing is done in WB stage, in order to forward correct information.<br>
+
+
 
 
 ### Testing
 ![Testing waveform](./Pipeline/Others/waveform_1.png)
-The code used for testing is written into the startup.s asm file. The memory regions are defined in the linker script. <br>
+The code used for testing is written into the startup.s asm file. The memory regions are defined in the linker script. (WIP) <br>
 The create_hex.sh script takes in as a parameter the name of the asm source (no .s extension), and generates the little endian hex dump file. (assembler -> linker -> objcopy -> hexdump) <br>
 The run_one.sh script compiles the .v code into a .out intermediate simulation executable, which is then run by the vvp runtime to run the simulation.<br>
 The code loaded into the Instruction Memory covers arithmetic, logical, branch and memory instructions. There are cases that trigger data hazards, control hazards, and exceptions.<br>
-Testing was done using Icarus Verilog and Gtkwave in Visual Studio Code.<br>
+Testing was done using Icarus Verilog and GTKWave in Visual Studio Code.<br>
+
+
+### Tools Needed and how to use
+-> Icarus Verilog, GTKWave
+```Debian/Ubuntu
+apt install iverilog
+apt install gtkwave
+```
+```RedHat/Fedora
+dnf install iverilog
+dnf install gtkwave
+```
+-> On Windows: GTKWave: https://sourceforge.net/projects/gtkwave/files/ Icarus Verilog: https://bleyer.org/icarus/ <br>
+
+-> GCC RISC-V Stack: https://github.com/riscv-collab/riscv-gnu-toolchain<br>
+**Follow the instructions for Newlib**
+<br>
+<br>
+
+-> In order to run verilog code:
+```bash
+iverilog -g2012 <all verilog files to compile>; vvp a.out;
+```
+
+-> In order to run the simulation
+```bash
+gtkwave waveform.vcd (or whatever simulation name is given in the testbench file)
+```
+<br>
+
+-> In order to generate a hexfile
+```bash
+riscv64-unknown-elf-as -march=rv32i_zicsr -mabi=ilp32 -o <Output obj file> <.s File>
+riscv64-unknown-elf-gcc -march=rv32i_zicsr -mabi=ilp32 -nostdlib -T <Linker File> <.o file> -o <Output .elf file>
+riscv64-unknown-elf-objcopy -O binary <.elf file> <Output .bin file>
+xxd -p -c 4 <.bin file> > <Output .hex file>
+```
+
+-> In the file riscv_defines the define DEBUG selects between manually written .mem files and loading from the generated .hex (the paths are specified in the included scripts)<br>
+
+
+

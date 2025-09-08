@@ -86,33 +86,33 @@ ROM:
 
 PmpConfigs and addresses:
                                       L -- A   x w r
-pmpcfg0 = TOR, Locked, ---         8'b1_00_01__0_0_0  // trap
+pmpcfg0 = TOR, Locked, ---         8'b1_00_01__0_0_0  // trap 1000_1000 ->88
 pmpaddr0 = TOR, end = 0x0000_8000  
 
-pmpcfg1 = TOR, Locked, ---         8'b1_00_01__0_0_0  // reset
+pmpcfg1 = TOR, Locked, ---         8'b1_00_01__0_0_0  // reset 1000_1000 ->88
 pmpaddr1 = TOR, end = 0x0001_0000
 
-pmpcfg2 = TOR, Locked, X--         8'b1_00_01__1_0_0 // text 0x8c   
+pmpcfg2 = TOR, Locked, X--         8'b1_00_01__1_0_0 // text 0x8c   1000_1100 ->8c
 pmpaddr2 = TOR, end = 0x0003_E000
 
-pmpcfg3 = TOR, Locked, R--         8'b1_00_01__0_0_1 // rom data
+pmpcfg3 = TOR, Locked, R--         8'b1_00_01__0_0_1 // rom data 1000_1001 89
 pmpaddr3 = TOR, end = 0x0004_0000
 
 
-pmpcfg4 = TOR, Locked, RW-         8'b1_00_01__0_1_1 // glb data
+pmpcfg4 = TOR, Locked, RW-         8'b1_00_01__0_1_1 // glb data 1000_1011 8b
 pmpaddr4 = TOR, end = 0x0004_2000
 
-pmpcfg5 = TOR, Locked, RW-         8'b1_00_01__0_1_1 // dynamic 
+pmpcfg5 = TOR, Locked, RW-         8'b1_00_01__0_1_1 // dynamic  1000_1011 8b
 pmpaddr5 = TOR, end = 0x0004_4000
 
-pmpcfg6 = TOR, Locked, RW-         8'b1_00_01__0_1_1 // stack
+pmpcfg6 = TOR, Locked, RW-         8'b1_00_01__0_1_1 // stack 1000_1011 8b
 pmpaddr6 = TOR, end = 0x0004_6000
 
-pmpcfg7 = TOR, Locked, ---         8'b1_00_01__0_0_0 // mstack
+pmpcfg7 = TOR, Locked, ---         8'b1_00_01__0_0_0 // mstack 1000_1000 88
 pmpaddr7 = TOR, end = 0x0004_8000
 
-
-pmpcfg8 = TOR, Locked, ---         8'b1_00_01__0_0_0 // io
+ 
+pmpcfg8 = TOR, Locked, ---         8'b1_00_01__0_0_0 // io 1000_1000 88
 pmpaddr8 = TOR, end = 0x0004_A000
 
 64 bits: 

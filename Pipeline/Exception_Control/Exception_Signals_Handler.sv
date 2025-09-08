@@ -48,6 +48,16 @@ generate
   end
 
 
+wire [7:0] w_pmpcfg_regs_0 = w_pmpcfg_regs[0];
+wire [7:0] w_pmpcfg_regs_1 = w_pmpcfg_regs[1];
+wire [7:0] w_pmpcfg_regs_2 = w_pmpcfg_regs[2];
+wire [7:0] w_pmpcfg_regs_3 = w_pmpcfg_regs[3];
+wire [7:0] w_pmpcfg_regs_4 = w_pmpcfg_regs[4];
+wire [7:0] w_pmpcfg_regs_5 = w_pmpcfg_regs[5];
+wire [7:0] w_pmpcfg_regs_6 = w_pmpcfg_regs[6];
+wire [7:0] w_pmpcfg_regs_7 = w_pmpcfg_regs[7];
+wire [7:0] w_pmpcfg_regs_8 = w_pmpcfg_regs[8];
+
 endgenerate
 
 
@@ -149,6 +159,7 @@ begin
     for( j = 0; j<=ENABLED_PMP_REGISTERS ; j = j+1)
     begin
         r_A = w_pmpcfg_regs[j][4:3];
+        $display("%b, index = %d",r_A,j);
         r_r = w_pmpcfg_regs[j][0];
         r_w = w_pmpcfg_regs[j][1];
         r_x = w_pmpcfg_regs[j][2];
